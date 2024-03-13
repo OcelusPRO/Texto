@@ -53,7 +53,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
                 )
             )
 
-            call.respondTemplate("code.hbs", PageInfo(TextoInfo(file.readText())))
+            call.respondTemplate("code.hbs", info)
         }
 
         staticResources("/static", "static")
