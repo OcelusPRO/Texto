@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="15 seconds">
+    <property name="LOG_DIR" value="./logs"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss, -5}] %boldRed([%thread]) %boldBlue([%logger{36}]) %highlight(%-5level -
+                %msg%n)
+            </pattern>
+        </encoder>
+    </appender>
+    <property name="LOG_FILE" value="LogFile"/>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./${LOG_DIR}/${LOG_FILE}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>./${LOG_DIR}/archives/${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!-- keep 30 days' worth of history capped at 3GB total size -->
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-10relative [%d{yyyy-MM-dd HH:mm:ss, -5}] [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO"> <!-- ERROR, WARN, INFO, DEBUG, TRACE -->
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

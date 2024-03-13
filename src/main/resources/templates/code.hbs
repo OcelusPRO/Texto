@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="/static/style/atom-one-dark.min.css" > <!-- THEME -->
+    <link rel="stylesheet" href="/static/style/code-style.css" >
+    <link rel="stylesheet" href="/static/style/fa-all.min.css" >
+
+
+    <title>Texto</title>
+</head>
+<body>
+
+
+<script src="/static/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+
+<div class="code-page">
+    <div class="left-zone">
+        <pre>
+            <code id="codeZone" class="code-zone css">{{ paste.content }}</code>
+        </pre>
+    </div>
+    <div class="right-zone">
+        <div class="profile-zone">
+            <div class="card">
+                <img src="{{ author.avatar }}" alt="Person" class="card__image">
+                <p class="card__name">{{ author.name }}</p>
+                <div class="grid-container">
+                    <div class="grid-child-posts">
+                        {{ author.pasts }} paste
+                    </div>
+                    <div class="grid-child-followers">
+                        {{ author.vues }} vues <i class="fa fa-instagram-square"></i>
+                    </div>
+                </div>
+                <ul class="social-icons">
+                    {{{ author.social }}}
+                </ul>
+                <a href="/authors/{{ author.cleanName }}"><button class="btn draw-border">Autres pasts</button></a>
+                <hr>
+                <p><b>{{ paste.title }}</b></p>
+                <p>{{ paste.description }}</p>
+            </div>
+        </div>
+        <div class="manage-zone">
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/code.js"></script>
+</body>
+</html>
