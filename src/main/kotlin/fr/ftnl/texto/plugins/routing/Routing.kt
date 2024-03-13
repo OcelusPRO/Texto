@@ -1,22 +1,21 @@
 package fr.ftnl.texto.plugins.routing
 
+import fr.ftnl.texto.database.models.Texto
+import fr.ftnl.texto.ext.md5
 import io.ktor.http.*
-import io.ktor.resources.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.http.content.*
 import io.ktor.server.mustache.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.doublereceive.*
 import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.request.*
-import io.ktor.server.resources.*
 import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
 import java.io.File
 
-fun Application.configureRouting() {
+fun Application.configureRouting(config: ApplicationConfig) {
     install(AutoHeadResponse)
     install(DoubleReceive)
     install(Resources)
@@ -33,24 +32,40 @@ fun Application.configureRouting() {
             call.respondText("Hello World!")
         }
 
-        get("/{past_id}"){
-            val pastId = call.parameters["past_id"] ?: return@get call.respond(HttpStatusCode.NotFound)
+        get("/{texto_id}"){
+            val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
 
-            val content = File("./pages/$pastId").readText()
+            val file = File("./pages/$textoId")
+            val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
 
-            call.respondTemplate("code.hbs", PageInfo(PasteInfo(content)))
+            val info = PageInfo(
+                TextoInfo(
+                    content = file.readText(),
+                    title = texto.name,
+                    description = texto.description
+                ),
+                AuthorInfo(
+                    avatar = "",
+                    name = texto.author.name,
+                    social = texto.author.social.map { SocialMedia(it.url, it.iconName) },
+                    vues = texto.author.textos.sumOf { it.vues },
+                    texto = texto.author.textos.size
+                )
+            )
+
+            call.respondTemplate("code.hbs", PageInfo(TextoInfo(file.readText())))
         }
 
         staticResources("/static", "static")
+        staticResources("/", "static/pages")
     }
 }
 
 data class PageInfo(
-    val paste: PasteInfo = PasteInfo(),
+    val paste: TextoInfo = TextoInfo(),
     val author: AuthorInfo = AuthorInfo()
 )
-
-data class PasteInfo(
+data class TextoInfo(
     val content: String = "",
     val title: String = "",
     val description: String = ""
@@ -60,13 +75,23 @@ data class AuthorInfo(
     val avatar: String = "",
     val name: String = "",
     val cleanName: String = "",
-    val social: String = ""
+    val social: String = "",
+    val vues: Int = 0,
+    val texto: Int = 0
 ) {
-    constructor(avatar: String, name: String, social: List<SocialMedia>) : this(
+    constructor(
+        avatar: String,
+        name: String,
+        social: List<SocialMedia>,
+        vues: Int,
+        texto: Int
+    ) : this(
         avatar,
         name,
         name.toClean(),
-        social.map { it.toHtmlMedia() }.joinToString { it }
+        social.map { it.toHtmlMedia() }.joinToString { it },
+        vues,
+        texto
     )
 }
 data class SocialMedia(
