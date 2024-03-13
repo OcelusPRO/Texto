@@ -1,5 +1,6 @@
 package fr.ftnl.texto
 
+import fr.ftnl.texto.database.DBManager
 import fr.ftnl.texto.plugins.*
 import fr.ftnl.texto.plugins.routing.configureHTTP
 import fr.ftnl.texto.plugins.routing.configureRouting
@@ -12,10 +13,16 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+    startup()
+
     configureSecurity()
     configureHTTP()
     configureMonitoring()
     configureSerialization()
     configureTemplating()
-    configureRouting()
+    configureRouting(environment.config)
+}
+
+fun Application.startup(){
+    DBManager(environment.config)
 }

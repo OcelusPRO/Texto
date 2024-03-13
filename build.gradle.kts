@@ -58,11 +58,21 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("ch.qos.logback:logback-core:$logback_version")
 
+    // Exposed
     implementation("org.jetbrains.exposed:exposed-jodatime:0.41.1")
     implementation("org.jetbrains.exposed:exposed-core:0.41.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
     implementation("org.jetbrains.exposed:exposed-dao:0.41.1")
-    implementation("org.postgresql:postgresql:42.6.0")
+    //drivers
+    implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("org.postgresql:postgresql:42.7.1")
+    implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.9")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
+    implementation("com.h2database:h2:2.2.224")
+    implementation("org.xerial:sqlite-jdbc:3.44.1.0")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.1")
+
+    implementation("com.zaxxer:HikariCP:4.0.3")
 
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
