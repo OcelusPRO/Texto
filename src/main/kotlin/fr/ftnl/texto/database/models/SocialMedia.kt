@@ -4,10 +4,14 @@ import fr.ftnl.texto.database.abstract.BaseIntEntity
 import fr.ftnl.texto.database.abstract.BaseIntEntityClass
 import fr.ftnl.texto.database.abstract.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object SocialMediaTable : BaseIntIdTable("TBL_SOCIAL_MEDIA_SOM") {
-    val user = reference("user", AuthorTable)
+    val user = reference("user", AuthorTable,
+        onUpdate = ReferenceOption.CASCADE,
+        onDelete = ReferenceOption.CASCADE
+    )
     val iconName = varchar("icon", 20)
     val url = varchar("url", 255)
 }

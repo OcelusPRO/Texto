@@ -6,12 +6,16 @@ import fr.ftnl.texto.database.abstract.BaseIntEntityClass
 import fr.ftnl.texto.database.abstract.BaseIntIdTable
 import fr.ftnl.texto.ext.md5
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.jodatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 object TextoTable : BaseIntIdTable("TBL_TEXTO_TXT") {
-    val user = reference("user", AuthorTable)
+    val user = reference("user", AuthorTable,
+        onUpdate = ReferenceOption.CASCADE,
+        onDelete = ReferenceOption.CASCADE
+    )
     val keyHash = varchar("key_hash", 255).uniqueIndex()
     val name = varchar("name", 100)
     val description = text("description")
