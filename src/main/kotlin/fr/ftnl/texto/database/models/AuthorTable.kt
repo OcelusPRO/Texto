@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object AuthorTable : BaseIntIdTable("TBL_AUTHOR_AUT") {
     val discordId = long("discord_user_id").uniqueIndex()
     val name = varchar("name", 25)
+    val avatarUrl = varchar("avatar", 255)
 }
 
 class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
@@ -24,6 +25,10 @@ class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
     private var _name by AuthorTable.name
     val name: String
         get() = transaction { _name }
+
+    private var _avatarUrl by AuthorTable.avatarUrl
+    val avatarUrl: String
+        get() = transaction { _avatarUrl }
 
     private val _social by SocialMedia referrersOn SocialMediaTable.user
     val social
