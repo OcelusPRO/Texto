@@ -35,11 +35,25 @@ fun Application.configureRouting(config: ApplicationConfig) {
         fun getPageInfo(pageId: String): PageInfo? {
             val file = File("./pages/$pageId")
             val texto = Texto.get(pageId) ?: return null
+            if (file.exists().not()) return null
+
+            val texto = Texto.get(pageId)
+
+            var badPage = false
+            when {
+                texto == null -> { badPage = true }
+                texto.expireAt?.isBeforeNow == true -> { badPage = true }
+            }
+            if (badPage) {
+                file.delete()
+                texto?.deleteOnTransaction()
+                return null
+            }
 
             val info = PageInfo(
                 TextoInfo(
                     content = file.readText(),
-                    title = texto.name,
+                    title = texto!!.name,
                     description = texto.description,
                     vues = texto.vues +1
                 ),

@@ -54,4 +54,6 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
     val expireAt: DateTime?
         get() = transaction { _expireAt }
 
+    fun deleteOnTransaction() = transaction { this@Texto.delete() }
+
 }
