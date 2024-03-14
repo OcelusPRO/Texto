@@ -30,8 +30,9 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
 
 
     private var _vues by TextoTable.vues
-    val vues: Int
+    var vues: Int
         get() = transaction { _vues }
+        set(value) = transaction { _vues = value }
 
     private var _name by TextoTable.name
     val name: String
