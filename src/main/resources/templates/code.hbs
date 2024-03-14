@@ -21,7 +21,7 @@
 <div class="code-page">
     <div class="left-zone">
         <pre>
-            <code id="codeZone" class="code-zone css">{{ paste.content }}</code>
+            <code id="codeZone" class="code-zone css">{{ texto.content }}</code>
         </pre>
     </div>
     <div class="right-zone">
@@ -31,7 +31,7 @@
                 <p class="card__name">{{ author.name }}</p>
                 <div class="grid-container">
                     <div class="grid-child-posts">
-                        {{ author.pasts }} paste
+                        {{ author.textos }} texto
                     </div>
                     <div class="grid-child-followers">
                         {{ author.vues }} vues <i class="fa fa-instagram-square"></i>
@@ -40,10 +40,11 @@
                 <ul class="social-icons">
                     {{{ author.social }}}
                 </ul>
-                <a href="/authors/{{ author.cleanName }}"><button class="btn draw-border">Autres pasts</button></a>
+                <a href="/authors/{{ author.cleanName }}"><button class="btn draw-border">Autres textos</button></a>
                 <hr>
-                <p><b>{{ paste.title }}</b></p>
-                <p>{{ paste.description }}</p>
+                <p><b>{{ texto.title }}</b></p>
+                <p>{{ texto.description }}</p>
+                <p>{{ texto.vues }} vues</p>
             </div>
         </div>
         <div class="manage-zone">
