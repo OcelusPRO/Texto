@@ -15,6 +15,7 @@ fun main(args: Array<String>) {
 fun Application.module() {
     startup()
 
+    configSessions()
     configureSecurity()
     configureHTTP()
     configureMonitoring()
