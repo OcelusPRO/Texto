@@ -44,13 +44,10 @@ dependencies {
     implementation("io.ktor:ktor-server-rate-limit:$ktor_version")
 
     implementation("io.ktor:ktor-client-cio:$ktor_version")
-    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-client-logging:$ktor_version")
     implementation("io.ktor:ktor-client-apache-jvm:$ktor_version")
-    implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
-
-    implementation("de.mkammerer:argon2-jvm:2.11")
 
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
 
@@ -74,6 +71,7 @@ dependencies {
 
     implementation("com.zaxxer:HikariCP:4.0.3")
 
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
