@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import fr.ftnl.texto.database.models.Texto
 import fr.ftnl.texto.ext.md5
+import fr.ftnl.texto.plugins.UserSession
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
@@ -15,6 +16,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
 import java.io.File
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
@@ -34,7 +36,6 @@ fun Application.configureRouting(config: ApplicationConfig) {
     routing {
         fun getPageInfo(pageId: String): PageInfo? {
             val file = File("./pages/$pageId")
-            val texto = Texto.get(pageId) ?: return null
             if (file.exists().not()) return null
 
             val texto = Texto.get(pageId)
@@ -81,14 +82,14 @@ fun Application.configureRouting(config: ApplicationConfig) {
         get("/{texto_id}"){
             val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
             val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
-            pageCache.put(textoId, info.copy(
-                texto = TextoInfo(
-                    info.texto.content,
-                    info.texto.title,
-                    info.texto.description,
-                    info.texto.vues + 1 // TODO : if session already view current texto dont increment
-                )
-            ))
+
+            val session = call.sessions.get<UserSession>() ?: UserSession()
+            if(session.pageViews.contains(textoId).not()){
+                info.texto.vues++
+                info.author.vues++
+                pageCache.put(textoId, info)
+            }
+            session.pageViews.add(textoId)
             call.respondTemplate("code.hbs", info)
         }
 
@@ -105,7 +106,7 @@ data class TextoInfo(
     val content: String = "",
     val title: String = "",
     val description: String = "",
-    val vues: Int = 0
+    var vues: Int = 0
 )
 private fun String.toClean() = this.lowercase().replace(" ", "_")
 data class AuthorInfo(
@@ -113,8 +114,8 @@ data class AuthorInfo(
     val name: String = "",
     val cleanName: String = "",
     val social: String = "",
-    val vues: Int = 0,
-    val texto: Int = 0
+    var vues: Int = 0,
+    val textos: Int = 0
 ) {
     constructor(
         avatar: String,
