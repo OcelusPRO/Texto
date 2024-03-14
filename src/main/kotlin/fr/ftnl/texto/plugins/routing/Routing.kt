@@ -1,5 +1,7 @@
 package fr.ftnl.texto.plugins.routing
 
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.Caffeine
 import fr.ftnl.texto.database.models.Texto
 import fr.ftnl.texto.ext.md5
 import io.ktor.http.*
@@ -14,6 +16,8 @@ import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.io.File
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.toJavaDuration
 
 fun Application.configureRouting(config: ApplicationConfig) {
     install(AutoHeadResponse)
@@ -28,31 +32,49 @@ fun Application.configureRouting(config: ApplicationConfig) {
         }
     }
     routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
-
-        get("/{texto_id}"){
-            val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
-
-            val file = File("./pages/$textoId")
-            val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
+        fun getPageInfo(pageId: String): PageInfo? {
+            val file = File("./pages/$pageId")
+            val texto = Texto.get(pageId) ?: return null
 
             val info = PageInfo(
                 TextoInfo(
                     content = file.readText(),
                     title = texto.name,
-                    description = texto.description
+                    description = texto.description,
+                    vues = texto.vues +1
                 ),
                 AuthorInfo(
-                    avatar = "",
+                    avatar = texto.author.avatarUrl,
                     name = texto.author.name,
                     social = texto.author.social.map { SocialMedia(it.url, it.iconName) },
-                    vues = texto.author.textos.sumOf { it.vues },
+                    vues = texto.author.textos.sumOf { it.vues }+1,
                     texto = texto.author.textos.size
                 )
             )
+            return info
+        }
+        val pageCache: Cache<String, PageInfo?> = Caffeine.newBuilder()
+            .expireAfterWrite(5.minutes.toJavaDuration())
+            .removalListener { key: String?, value: PageInfo?, cause ->
+                if (key == null) return@removalListener
+                if (value == null) return@removalListener
+                val texto = Texto.get(key) ?: return@removalListener
+                texto.vues = value.texto.vues
+            }
+            .build()
 
+
+        get("/{texto_id}"){
+            val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
+            val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
+            pageCache.put(textoId, info.copy(
+                texto = TextoInfo(
+                    info.texto.content,
+                    info.texto.title,
+                    info.texto.description,
+                    info.texto.vues + 1 // TODO : if session already view current texto dont increment
+                )
+            ))
             call.respondTemplate("code.hbs", info)
         }
 
@@ -62,13 +84,14 @@ fun Application.configureRouting(config: ApplicationConfig) {
 }
 
 data class PageInfo(
-    val paste: TextoInfo = TextoInfo(),
+    val texto: TextoInfo = TextoInfo(),
     val author: AuthorInfo = AuthorInfo()
 )
 data class TextoInfo(
     val content: String = "",
     val title: String = "",
-    val description: String = ""
+    val description: String = "",
+    val vues: Int = 0
 )
 private fun String.toClean() = this.lowercase().replace(" ", "_")
 data class AuthorInfo(
