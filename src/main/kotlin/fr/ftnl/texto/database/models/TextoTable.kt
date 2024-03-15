@@ -26,6 +26,21 @@ object TextoTable : BaseIntIdTable("TBL_TEXTO_TXT") {
 class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
     companion object : BaseIntEntityClass<Texto>(TextoTable) {
         fun get(id: String) = transaction { find { TextoTable.keyHash eq id }.firstOrNull() }
+        fun create(
+            author: Author,
+            name: String,
+            description : String,
+            expire: DateTime? = DateTime.now().plusDays(7),
+            hash: String
+        ) = transaction {
+            new {
+                _author = author
+                _name = name
+                _description = description
+                _expireAt = expire
+                _keyHash = hash
+            }
+        }
     }
 
     private var _author by Author referencedOn TextoTable.user
