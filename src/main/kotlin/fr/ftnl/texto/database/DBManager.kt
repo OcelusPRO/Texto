@@ -21,7 +21,7 @@ class DBManager(config: ApplicationConfig) {
     private fun getDriverName(type: String): String = when(type) {
         "mssql" -> "com.microsoft.sqlserver.jdbc.SQLServerDriver"
         "h2" -> "org.h2.Driver"
-        "sqlite" -> "org.sqlite.JDBC"
+        //"sqlite" -> "org.sqlite.JDBC"
         "mariadb" -> "org.mariadb.jdbc.Driver"
         "mysql" -> "com.mysql.cj.jdbc.Driver"
         "pgsql" -> "com.impossibl.postgres.jdbc.PGDriver"
@@ -35,7 +35,7 @@ class DBManager(config: ApplicationConfig) {
         return when(config.property("database.type").getString()){
             "mssql" -> "jdbc:sqlserver://$host;databaseName=$name"
             "h2" -> "jdbc:h2:$host"
-            "sqlite" -> "jdbc:sqlite:$host"
+            //"sqlite" -> "jdbc:sqlite:$host"
             "mariadb" -> "jdbc:mariadb://$host/$name"
             "mysql" -> "jdbc:mysql://$host/$name"
             "pgsql" -> "jdbc:pgsql://$host/$name"
