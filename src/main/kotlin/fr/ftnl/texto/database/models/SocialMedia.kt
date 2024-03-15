@@ -38,5 +38,6 @@ class SocialMedia(id: EntityID<Int>): BaseIntEntity(id, SocialMediaTable) {
     private var _url by SocialMediaTable.url
     val url: String
         get() = transaction { _url }
+    fun deleteOnTransaction() = transaction { this@SocialMedia.delete() }
 
 }
