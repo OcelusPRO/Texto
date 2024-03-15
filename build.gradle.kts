@@ -47,7 +47,6 @@ dependencies {
     implementation("io.ktor:ktor-client-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-client-logging:$ktor_version")
-    implementation("io.ktor:ktor-client-apache-jvm:$ktor_version")
 
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
 
@@ -66,7 +65,6 @@ dependencies {
     implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.9")
     implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
     implementation("com.h2database:h2:2.2.224")
-    implementation("org.xerial:sqlite-jdbc:3.44.1.0")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.3.1")
 
     implementation("com.zaxxer:HikariCP:4.0.3")
