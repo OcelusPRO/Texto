@@ -22,7 +22,7 @@ import kotlin.time.toJavaDuration
 
 fun Route.getPage(){
     fun getPageInfo(pageId: String): PageInfo? {
-        val file = File("./pages/$pageId")
+        val file = File("./pages/${pageId.md5()}")
         if (file.exists().not()) return null
 
         val texto = Texto.get(pageId)
@@ -66,7 +66,7 @@ fun Route.getPage(){
         .build()
 
     get("/{texto_id}"){
-        val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
+        val textoId = call.parameters["texto_id"]?: return@get call.respond(HttpStatusCode.NotFound)
         val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
 
         val userSession = call.sessions.get<UserSession>()
@@ -111,6 +111,33 @@ fun Route.getPage(){
             texto.deleteOnTransaction()
             getPageInfo(textoId)
         }
+
+        get("/new"){
+            val query = call.request.queryParameters["from"]
+            val pageInfo = (if (query != null) getPageInfo(query) else PageInfo()) ?: PageInfo()
+
+            val session = call.sessions.get<UserSession>()
+            val author = session?.discordUser?.email?.let { Author.getByEmail(it) }
+                ?: return@get call.respond(HttpStatusCode.Unauthorized)
+
+            val authorInfo = AuthorInfo(
+                author.avatarUrl,
+                author.name,
+                author.social.map { SocialMedia(it.url, it.iconName) },
+                author.textos.sumOf { it.vues },
+                author.textos.size
+            )
+
+            pageInfo.author = authorInfo
+            pageInfo.connected = UserInfo(
+                session.discordUser?.username ?: "",
+                session.discordUser?.avatar ?: "",
+                true,
+                false
+            )
+
+            call.respondTemplate("new.hbs", pageInfo)
+        }
     }
 }
 
@@ -118,7 +145,7 @@ fun Route.getPage(){
 @Serializable
 data class PageInfo(
     val texto: TextoInfo = TextoInfo(),
-    val author: AuthorInfo = AuthorInfo(),
+    var author: AuthorInfo = AuthorInfo(),
     var connected: UserInfo = UserInfo()
 )
 

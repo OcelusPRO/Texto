@@ -45,7 +45,8 @@ fun newPost(
     val file = File(folder.path + "/" + hash)
     file.createNewFile()
     file.writeText(data)
-    Texto.create(user, name, description, expire, hash, public)
+
+    Texto.create(user, name, description, expire, key, public)
     return key
 }
 
