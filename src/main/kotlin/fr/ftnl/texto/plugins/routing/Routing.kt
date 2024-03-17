@@ -8,6 +8,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.http.content.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.doublereceive.*
 import io.ktor.server.plugins.ratelimit.*
@@ -27,6 +28,7 @@ fun Application.configureRouting(config: ApplicationConfig) {
 
         status(HttpStatusCode.NotFound) { call, status -> call.respondText(text = "404: Page Not Found", status = status) }
 
+        exception<BadRequestException> { call, cause -> call.respond(HttpStatusCode.BadRequest) }
         exception<Throwable> { call, cause ->
             cause.printStackTrace()
             call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
