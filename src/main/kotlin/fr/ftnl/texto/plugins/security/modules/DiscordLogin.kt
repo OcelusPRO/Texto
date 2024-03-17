@@ -23,7 +23,7 @@ fun AuthenticationConfig.discordLogin(cfg: ApplicationConfig) {
                 requestMethod = HttpMethod.Post,
                 clientId = cfg.property("security.discordOauth.clientId").getString(),
                 clientSecret = cfg.property("security.discordOauth.clientSecret").getString(),
-                defaultScopes = listOf("identify", "connections"),
+                defaultScopes = listOf("identify", "connections", "email"),
             )
         }
         client = HTTP_CLIENT

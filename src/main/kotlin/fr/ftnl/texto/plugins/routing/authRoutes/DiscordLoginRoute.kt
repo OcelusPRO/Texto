@@ -4,22 +4,35 @@ import fr.ftnl.texto.HTTP_CLIENT
 import fr.ftnl.texto.database.models.Author
 import fr.ftnl.texto.database.models.SocialMedia
 import fr.ftnl.texto.plugins.DiscordUser
-import fr.ftnl.texto.plugins.UserConnection
 import fr.ftnl.texto.plugins.UserSession
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.math.log
+
+@Serializable
+data class UserConnection(
+    val id: String,
+    val name: String,
+    val type: String,
+    val friend_sync: Boolean,
+    val metadata_visibility: Long,
+    val show_activity: Boolean,
+    val two_way_link: Boolean,
+    val verified: Boolean,
+    val visibility: Int,
+)
 
 fun Route.discordLoginRoute() {
     authenticate("discord_oauth") {
         get("/login") {
-            call.sessions.clear("user_session")
-            call.sessions.set(UserSession())
             call.respondRedirect("/clb")
         }
         get("/clb") {
@@ -32,14 +45,14 @@ fun Route.discordLoginRoute() {
                 ignoreUnknownKeys = true
             }
             val result = json.decodeFromString<DiscordUser>(response)
-            var user = Author.get(result.id.toLong())
+            var user = Author.getByEmail(result.email)
             if (user == null) {
                 if (call.application.environment.config.property("users.allowNew").getString().toBoolean())
-                    user = Author.create(result.id.toLong(), result.username, result.avatar)
+                    user = Author.create(result.email, result.username,  "https://cdn.discordapp.com/avatars/${result.id}/${result.avatar}")
                 else return@get call.respond(HttpStatusCode.Unauthorized)
             }
             user.name = result.username
-            user.avatarUrl = result.avatar ?: "/static/images/Unknown_person.jpg"
+            user.avatarUrl = "https://cdn.discordapp.com/avatars/${result.id}/${result.avatar}"
 
 
             val connectionsText = HTTP_CLIENT.get("https://discord.com/api/users/@me/connections") {
@@ -58,10 +71,10 @@ fun Route.discordLoginRoute() {
             }
             user.social.filter { it.url !in cons.map { c -> c.second } }.forEach { it.deleteOnTransaction() }
 
-            var session = call.sessions.get<UserSession>()
-            if (session == null) session = UserSession(mutableSetOf(), result, connections)
-            else session = UserSession(session.pageViews, result, connections)
+            result.avatar = "https://cdn.discordapp.com/avatars/${result.id}/${result.avatar}"
+            val session = UserSession(result, result.email.hashCode())
             call.sessions.set(session)
+            println(user.apiKey)
             call.respondRedirect("/")
         }
     }
@@ -79,7 +92,11 @@ fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
 }
 fun socialMediaTypeTransformer(type: String): String {
     return when(type) {
-        "domain" -> "link"
+        "domain" -> "fa-solid fa-link"
+        "steam" -> "fa-brands fa-steam-symbol"
+        "twitch" -> "fa-brands fa-twitch"
+        "twitter" -> "fa-brands fa-x-twitter"
+        "youtube" -> "fa-brands fa-youtube"
         else -> type
     }
 }

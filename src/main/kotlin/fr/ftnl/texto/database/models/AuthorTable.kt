@@ -1,6 +1,5 @@
 package fr.ftnl.texto.database.models
 
-import com.sun.jna.platform.unix.solaris.LibKstat.KstatNamed.UNION.STR
 import fr.ftnl.texto.database.abstract.BaseIntEntity
 import fr.ftnl.texto.database.abstract.BaseIntEntityClass
 import fr.ftnl.texto.database.abstract.BaseIntIdTable
@@ -9,7 +8,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object AuthorTable : BaseIntIdTable("TBL_AUTHOR_AUT") {
-    val discordId = long("discord_user_id").uniqueIndex()
+    val email = integer("user_email_hash").uniqueIndex()
     val name = varchar("name", 25)
     val avatarUrl = varchar("avatar", 255)
     val apiKey = varchar("api_key", 255)
@@ -17,16 +16,16 @@ object AuthorTable : BaseIntIdTable("TBL_AUTHOR_AUT") {
 
 class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
     companion object : BaseIntEntityClass<Author>(AuthorTable) {
-        fun get(id: Long) = transaction {
-            find { AuthorTable.discordId eq id }.firstOrNull()
+        fun getByEmail(email: String) = transaction {
+            find { AuthorTable.email eq email.hashCode() }.firstOrNull()
         }
         fun getByApiKey(key: String) = transaction {
             find { AuthorTable.apiKey eq key }.firstOrNull()
         }
 
-        fun create(did: Long, name: String, avatar: String?) = transaction {
+        fun create(email: String, name: String, avatar: String?) = transaction {
             new {
-                _discordId = did
+                _email = email.hashCode()
                 _name = name
                 _avatarUrl = avatar ?: "/static/images/Unknown_person.jpg"
                 _apiKey = String.keyGen(255)
@@ -35,9 +34,9 @@ class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
     }
 
 
-    private var _discordId by AuthorTable.discordId
-    val discordId
-        get() = transaction { _discordId }
+    private var _email by AuthorTable.email
+    val emailHash
+        get() = transaction { _email }
 
     private var _name by AuthorTable.name
     var name: String
