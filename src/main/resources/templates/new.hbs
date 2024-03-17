@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="/static/style/tailwind.css" >
+    <link rel="stylesheet" href="/static/style/style.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
+
+    <link rel="stylesheet" href="/static/style/hljs.min.css" >
+    <script src="/static/js/highlight.min.js"></script>
+
+    <title>Texto</title>
+</head>
+<body>
+
+
+
+<div class="h-screen">
+    <div class="flex h-full flex-col">
+        <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl text-white">
+            <div class="flex-1 italic">
+                <span class="ml-4">TEXTO</span>
+            </div>
+            <div class="flex flex-1 items-center justify-center space-x-2">
+                <button id="menu-save" class="h-6 w-6 tooltip"><i class="fa-regular fa-floppy-disk"></i>
+                    <div class="bottom">
+                        <p>Enregistrer</p>
+                    </div>
+                </button>
+            </div>
+            <div class="flex flex-1 justify-end">
+{{#connected.connected}}
+                <img class="h-full w-8  mr-1 rounded-full" src="{{ connected.avatar }}" alt="avatar">
+{{/connected.connected}}
+{{^connected.connected}}
+                <a href="/login"><div class="px-2 mr-1 bg-gray-700 rounded-lg">Login</div></a>
+{{/connected.connected}}
+            </div>
+        </div>
+        <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white h-full">
+            <div class="flex-1 h-full">
+                <div class="flex flex-row h-full">
+                    <div class="flex-col" id="number-list">
+                        <!-- générer automatiquement selon le nombre de lignes -->
+                    </div>
+                    <textarea
+                            class="bg-gray-700 resize-none w-full h-full mx-2"
+                            id="codeZone"
+                            placeholder="Contenu de votre texto"
+                    >{{texto.content}}</textarea>
+                </div>
+            </div>
+            <div class="relative w-96">
+                <div class="fixed right-18 flex h-auto w-96 flex-col items-center space-y-5 rounded-xl bg-gray-800 p-6">
+                    <a href="/author/{{ author.cleanName }}">
+                        <img class="h-40 w-40 rounded-full" src="{{ author.avatar }}" alt="avatar">
+                    </a>
+                    <a href="/author/{{ author.cleanName }}">
+                        <div class="text-3xl">{{ author.name }}</div>
+                    </a>
+                    <div class="flex w-full justify-around rounded-lg bg-gray-700 p-3">
+                        <span>{{ author.textos }} textos</span>
+                        <span>{{ author.views }} vues</span>
+                    </div>
+                    <div
+                            id="socialMedia"
+                            class="flex w-full justify-around border-b border-gray-700 px-8 pb-6"
+                            data-social="{{ author.social }}"
+                    ></div>
+                    <div class="flex flex-col space-y-4 rounded-lg bg-gray-700 p-4 text-center w-full">
+                        <span class="text-lg">
+                          <input
+                                  class="text-lg bg-gray-700 text-center w-full"
+                                  id="title"
+                                  type="text"
+                                  placeholder="Titre du texto"
+                                  value="{{texto.title}}"
+                          >
+                        </span>
+                        <div class="text-gray-400 w-full">
+                          <textarea
+                                  class="bg-gray-700 resize-none w-full h-32 text-center"
+                                  id="description"
+                                  placeholder="Description du texto"
+                          >{{texto.description}}</textarea>
+                        </div>
+                        <label for="expiration" class="block mb-2 text-sm font-medium text-white text-left">Expiration :</label>
+                        <select id="expiration" class="rounded-lg h-10 bg-gray-800 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="3600">1 heure</option>
+                            <option value="21600">6 heures</option>
+                            <option value="43200">12 heures</option>
+                            <option value="86400" selected>1 jour</option>
+                            <option value="172800">2 jours</option>
+                            <option value="259200">3 jours</option>
+                            <option value="604800">7 jours</option>
+                            <option value="1209600">14 jours</option>
+                            <option value="2629800">1 mois</option>
+                            <option value="5259600">2 mois</option>
+                            <option value="7889400">3 mois</option>
+                            <option value="15778800">6 mois</option>
+                            <option value="31536000">1 ans</option>
+                            <option value="0">Jamais</option>
+                        </select>
+                        <label class="inline-flex items-center me-5 cursor-pointer">
+                            <input id="public" type="checkbox" value="" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-green-300 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                            <span class="ms-3 text-sm font-medium text-white">Publique</span>
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/code.js"></script>
+</body>
+</html>
