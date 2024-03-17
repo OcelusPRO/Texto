@@ -6,48 +6,72 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="/static/style/atom-one-dark.min.css" > <!-- THEME -->
-    <link rel="stylesheet" href="/static/style/code-style.css" >
+    <link rel="stylesheet" href="/static/style/tailwind.css" >
+    <link rel="stylesheet" href="/static/style/style.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
+
+    <link rel="stylesheet" href="/static/style/hljs.min.css" >
+    <script src="/static/js/highlight.min.js"></script>
 
     <title>Texto</title>
 </head>
 <body>
 
-<div class="code-page">
-    <div class="left-zone">
 
-        <!--
-         show public paste card here
-         -->
 
-    </div>
-    <div class="right-zone">
-        <div class="profile-zone">
-            <div class="card">
-                <img src="{{ author.avatar }}" alt="Person" class="card__image">
-                <p class="card__name">{{ author.name }}</p>
-                <div class="grid-container">
-                    <div class="grid-child-posts">
-                        {{ author.pasts }} paste
-                    </div>
-                    <div class="grid-child-followers">
-                        {{ author.vues }} vues <i class="fa fa-instagram-square"></i>
-                    </div>
-                </div>
-                <ul class="social-icons">
-                    {{{ author.social }}}
-                </ul>
-                <a href="/authors/{{ author.cleanName }}"><button class="btn draw-border">Autres pasts</button></a>
-                <hr>
-                <p><b>{{ paste.title }}</b></p>
-                <p>{{ paste.description }}</p>
+<div class="h-screen">
+    <div class="flex h-full flex-col">
+        <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl italic text-white">
+            <div class="flex-1">
+                <span class="ml-4">Texto</span>
+            </div>
+            <div class="flex flex-1 items-center justify-center space-x-2">
+                <button id="menu-copy" class="h-6 w-6"><i class="fa-regular fa-clipboard"></i></button>
+                <button id="menu-raw" class="h-6 w-6 "><i class="fa-regular fa-file-lines"></i></button>
+                <button id="menu-duplicate" class="h-6 w-6 "><i class="fa-regular fa-clone"></i></button>
+                <button id="menu-new" class="h-6 w-6 "><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <div class="flex flex-1 justify-end">
+                <img class="h-full w-8 rounded-full" src="{{ connected.avatar }}" alt="avatar">
             </div>
         </div>
-        <div class="manage-zone">
+        <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white">
+            <div class="flex-1">
+                <!-- TODO : Liste des pastes publiques de cet utilisateur -->
+                <div class="flex flex-row">
+                    <div class="flex-col" id="number-list">
+                        <!-- générer automatiquement selon le nombre de lignes -->
+                    </div>
+                    <pre><code id="codeZone">{{ texto.content }}</code></pre>
+                </div>
+            </div>
 
+            <div class="relative w-96">
+                <div class="fixed right-18 flex h-auto w-96 flex-col items-center space-y-5 rounded-xl bg-gray-800 p-6">
+                    <a href="/{{ author.cleanName }}">
+                        <img class="h-40 w-40 rounded-full" src="{{ author.avatar }}" alt="avatar">
+                    </a>
+                    <a href="/{{ author.cleanName }}">
+                        <div class="text-3xl">{{ author.name }}</div>
+                    </a>
+                    <div class="flex w-full justify-around rounded-lg bg-gray-700 p-3">
+                        <span>{{ author.textos }} textos</span>
+                        <span>{{ author.views }} vues</span>
+                    </div>
+                    <div class="flex w-full justify-around border-b border-gray-700 px-8 pb-6">
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                        <a href="#"><div class="h-8 w-8 rounded-full bg-gray-300"></div></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 <script src="/static/js/code.js"></script>
 </body>
