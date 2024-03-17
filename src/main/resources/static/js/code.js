@@ -6,25 +6,97 @@ document.getElementById("codeZone").classList.add(get_url_extension(document.URL
 
 
 const rawButton = document.getElementById("menu-raw")
-rawButton.addEventListener('click', () => {
-    window.open(`/raw/${window.location.pathname}`);
-})
-
+if (rawButton){
+    rawButton.addEventListener('click', () => {
+        window.open(`/raw/${window.location.pathname}`);
+    })
+}
 
 const copyButton = document.getElementById("menu-copy")
 const code = document.getElementById("codeZone")
-copyButton.addEventListener("click", () => {
-    navigator.clipboard.writeText(code.innerText).then(r => {
-        alert("Le contenu a été copier dans votre press papier.");
-    });
-})
+if (copyButton){
+    copyButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(code.innerText).then(r => {
+            alert("Le contenu a été copier dans votre press papier.");
+        });
+    })
+}
 
 
 const duplicateButton = document.getElementById("menu-duplicate")
+if (duplicateButton){
+    duplicateButton.addEventListener("click", () => {
+        const protocol = window.location.protocol
+        const host = window.location.host
+        const path = window.location.pathname.replace('/', '')
+        window.location.href = `${protocol}//${host}/new?from=${path}`
+    })
+}
+
 const newButton = document.getElementById("menu-new")
+if (newButton){
+    newButton.addEventListener("click", () => {
+        const protocol = window.location.protocol
+        const host = window.location.host
+        window.location.href = `${protocol}//${host}/new`
+    })
+}
+
+const content = document.getElementById("codeZone")
+if (content) {
+    content.addEventListener("keydown", () => {
+        showNumList(content.value.split('\n').length)
+    })
+    content.addEventListener("keyup", () => {
+        showNumList(content.value.split('\n').length)
+    })
+    content.addEventListener("keypress", () => {
+        showNumList(content.value.split('\n').length)
+    })
+    content.addEventListener("copy", () => {
+        showNumList(content.value.split('\n').length)
+    })
+    content.addEventListener("paste", () => {
+        showNumList(content.value.split('\n').length)
+    })
+    content.addEventListener("cut", () => {
+        showNumList(content.value.split('\n').length)
+    })
+}
+
+const saveButton = document.getElementById("menu-save")
+if (saveButton) {
+    const title = document.getElementById("title")
+    const description = document.getElementById("description")
+    const publicCheck = document.getElementById("public")
+    const expire = document.getElementById("expiration").value
+    saveButton.addEventListener("click", () => {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        if (!content.value) return alert("Contenu du texto vide")
+        if (!title.value) return alert("Titre du texto vide")
+        if (!description.value) return alert("Description du texto vide")
+
+        const raw = JSON.stringify({
+            "content": content.value,
+            "title": title.value,
+            "description": description.value,
+            "public": publicCheck.checked,
+            "expire": Date.now() + (expire*1000)
+        });
+        const requestOptions = {method: "POST", headers: myHeaders, body: raw, redirect: "follow"};
+        const protocol = window.location.protocol
+        const host = window.location.host
+        console.log(requestOptions)
+        fetch(`${protocol}//${host}/new-texto/user`, requestOptions)
+            .then((response) => response.text())
+            .then((result) => window.location.href = result)
+            .catch((error) => alert(error));
+    })
+}
 
 const deleteButton = document.getElementById("menu-delete")
-
 if (deleteButton) {
     deleteButton.addEventListener("click", () => {
         window.location.replace(`${window.location.href}/delete`);
@@ -34,7 +106,6 @@ if (deleteButton) {
 
 const numberList = document.getElementById("number-list")
 const numberDiv = '<div class="w-4 text-gray-400">{key}</div>'
-
 function showNumList(size) {
     let result = ''
     for (let i = 1; i < size + 1; i++) {
@@ -42,7 +113,6 @@ function showNumList(size) {
     }
     numberList.innerHTML = result
 }
-
 showNumList(code.innerText.split('\n').length)
 
 const socialMedia = document.getElementById("socialMedia")
@@ -56,7 +126,6 @@ const mediaDiv = `
     </div>
 </a>
 `
-
 function showSocialMedia() {
     let data = JSON.parse(socialMedia.dataset.social)
     if (!data) data = []
