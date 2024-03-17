@@ -20,6 +20,7 @@ object TextoTable : BaseIntIdTable("TBL_TEXTO_TXT") {
     val name = varchar("name", 100)
     val description = text("description")
     val vues = integer("vues").default(0)
+    val public = bool("public").default(false)
     val expireAt = datetime("expire_at").nullable()
 }
 
@@ -31,7 +32,8 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
             name: String,
             description : String,
             expire: DateTime? = DateTime.now().plusDays(7),
-            hash: String
+            hash: String,
+            public: Boolean
         ) = transaction {
             new {
                 _author = author
@@ -39,6 +41,7 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
                 _description = description
                 _expireAt = expire
                 _keyHash = hash
+                _public = public
             }
         }
     }
@@ -64,6 +67,11 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
     private var _keyHash by TextoTable.keyHash
     val keyHash: String
         get() = transaction { _keyHash }
+
+    private var _public by TextoTable.public
+    var public: Boolean
+        get() = transaction { _public }
+        set(value) = transaction { _public = value }
 
     private var _expireAt by TextoTable.expireAt
     val expireAt: DateTime?
