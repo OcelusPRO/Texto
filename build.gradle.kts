@@ -1,3 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -6,10 +9,12 @@ plugins {
     kotlin("jvm") version "1.9.23"
     application
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "fr.ftnl.texto"
 version = "0.0.1"
+var mainClassName = "io.ktor.server.netty.EngineMain"
 
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
@@ -74,4 +79,24 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+}
+
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "18"
+}
+
+tasks.withType<ShadowJar> {
+    archiveBaseName.set("api")
+    archiveClassifier.set("")
+    archiveFileName.set("app.jar")
+}
+
+
+tasks.withType<org.gradle.jvm.tasks.Jar> {
+    manifest {
+        attributes["Implementation-Title"] = "api"
+        attributes["Implementation-Version"] = version
+        attributes["Main-Class"] = mainClassName
+    }
 }
