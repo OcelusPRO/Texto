@@ -41,6 +41,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-mustache-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-serialization-gson:$ktor_version")
     implementation("io.ktor:ktor-server-rate-limit:$ktor_version")
 
     implementation("io.ktor:ktor-client-cio:$ktor_version")
