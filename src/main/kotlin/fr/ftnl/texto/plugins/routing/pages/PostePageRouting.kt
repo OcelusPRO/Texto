@@ -7,6 +7,7 @@ import fr.ftnl.texto.ext.md5
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.security.modules.ApiSessionPrincipal
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.config.*
 import io.ktor.server.plugins.ratelimit.*
@@ -23,6 +24,7 @@ data class PostData(
     val content: String,
     val title: String,
     val description: String,
+    val public: Boolean,
     val expire: Long? = null
 )
 
@@ -31,6 +33,7 @@ fun newPost(
     name: String,
     description: String,
     user: Author,
+    public: Boolean,
     config: ApplicationConfig,
     expire: DateTime?
 ): String? {
@@ -42,7 +45,7 @@ fun newPost(
     val file = File(folder.path + "/" + hash)
     file.createNewFile()
     file.writeText(data)
-    Texto.create(user, name, description, expire, hash)
+    Texto.create(user, name, description, expire, hash, public)
     return key
 }
 
@@ -52,13 +55,14 @@ fun Route.postPage(){
         authenticate("discord_oauth") {
             rateLimit(RateLimitName("post_texto_user")) {
                 post("/user") {
-                    val author = call.sessions.get<UserSession>()?.discordUser?.id?.let { Author.get(it.toLong()) } ?: return@post
+                    val author = call.sessions.get<UserSession>()?.discordUser?.email?.let { Author.getByEmail(it) } ?: return@post
                     val postData = call.receive<PostData>()
                     val key = newPost(
                         postData.content,
                         postData.title,
                         postData.description,
                         author,
+                        postData.public,
                         call.application.environment.config,
                         postData.expire?.let { DateTime(it) }
                     )
@@ -78,6 +82,7 @@ fun Route.postPage(){
                         postData.title,
                         postData.description,
                         connected.user,
+                        postData.public,
                         call.application.environment.config,
                         DateTime.now().plusDays(7)
                     )

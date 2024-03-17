@@ -20,7 +20,7 @@ class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
         fun get(id: Long) = transaction {
             find { AuthorTable.discordId eq id }.firstOrNull()
         }
-        fun get(key: String) = transaction {
+        fun getByApiKey(key: String) = transaction {
             find { AuthorTable.apiKey eq key }.firstOrNull()
         }
 

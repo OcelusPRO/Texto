@@ -13,7 +13,7 @@ fun AuthenticationConfig.apiSecurityConfig(){
     apiKey("api-key") {
         headerName = "X-API-Key"
         validate {fromHeader ->
-            Author.get(fromHeader)?.let { ApiSessionPrincipal(fromHeader, it) }
+            Author.getByApiKey(fromHeader)?.let { ApiSessionPrincipal(fromHeader, it) }
         }
     }
 }
