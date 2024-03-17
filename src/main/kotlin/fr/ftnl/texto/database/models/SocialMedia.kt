@@ -12,7 +12,7 @@ object SocialMediaTable : BaseIntIdTable("TBL_SOCIAL_MEDIA_SOM") {
         onUpdate = ReferenceOption.CASCADE,
         onDelete = ReferenceOption.CASCADE
     )
-    val iconName = varchar("icon", 20)
+    val iconName = varchar("icon", 100)
     val url = varchar("url", 255)
 }
 
