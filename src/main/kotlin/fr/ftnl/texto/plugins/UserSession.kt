@@ -5,48 +5,47 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 
+@Serializable
 data class UserSession(
-    var pageViews: MutableSet<String> = mutableSetOf(),
     var discordUser: DiscordUser? = null,
-    var connections: Set<UserConnection> = mutableSetOf(),
+    val connectedEmailHash: Int
 )
 
 @Serializable
 data class DiscordUser(
     var id: String,
-    var username: String, //@SerializedName("discriminator") var discriminator: String,
-    var avatar: String? = null,
-    var verified: Boolean? = null,
-    var email: String? = null,
-    var flags: Int? = null,
-    var banner: String? = null,
-    @SerialName("accent_color") var accentColor: Int? = null,
-    @SerialName("premium_type") var premiumType: Int? = null,
-    @SerialName("public_flags") var publicFlags: Int? = null,
-)
-@Serializable
-data class UserConnection(
-    val id: String,
-    val name: String,
-    val type: String,
-    @SerialName("friend_sync") val friendSync: Boolean,
-    @SerialName("metadata_visibility") val metadataVisibility: Long,
-    @SerialName("show_activity") val showActivity: Boolean,
-    @SerialName("two_way_link") val twoWayLink: Boolean,
-    val verified: Boolean,
-    val visibility: Int,
+    var username: String,
+    var avatar: String = "",
+    var email: String = "",
 )
 
+@Serializable
+data class ViewSession(
+    var pageViews: MutableSet<String> = mutableSetOf()
+)
 
 fun Application.configSessions(){
     install(Sessions) {
         val config = this@configSessions.environment.config
         val secretEncryptKey = hex(config.property("security.sessions.secretEncryptKey").getString())
         val secretSignKey = hex(config.property("security.sessions.secretSignKey").getString())
-        header<UserSession>(config.property("security.sessions.sessionName").getString()) {
+
+        cookie<UserSession>("user-session") {
             transform(SessionTransportTransformerEncrypt(secretEncryptKey, secretSignKey))
+            cookie.path = "/"
+            cookie.maxAgeInSeconds = 7.days.inWholeSeconds
+            cookie.extensions["SameSite"] = "lax"
+        }
+
+        cookie<ViewSession>("pages"){
+            transform(SessionTransportTransformerEncrypt(secretEncryptKey, secretSignKey))
+            cookie.path = "/"
+            cookie.maxAgeInSeconds = 6.hours.inWholeSeconds
+            cookie.extensions["SameSite"] = "lax"
         }
     }
 }
