@@ -107,7 +107,7 @@ fun Route.getPage(){
             val author = call.sessions.get<UserSession>()?.discordUser?.email?.let { Author.getByEmail(it) }?.id
             if (author != texto.author.id) return@get call.respond(HttpStatusCode.Unauthorized)
 
-            call.respondRedirect("/author/${texto.author.name.toClean()}")
+            call.respondRedirect("/author/${texto.author.name.clean}")
             texto.deleteOnTransaction()
             getPageInfo(textoId)
         }
@@ -164,7 +164,8 @@ data class TextoInfo(
     val description: String = "",
     var views: Int = 0
 )
-private fun String.toClean() = this.lowercase().replace(" ", "_")
+private val String.clean
+    get() = this.lowercase().replace(" ", "_")
 
 @Serializable
 data class AuthorInfo(
@@ -184,7 +185,7 @@ data class AuthorInfo(
     ) : this(
         avatar,
         name,
-        name.toClean(),
+        name.clean,
         Gson().toJson(social),
         vues,
         texto
