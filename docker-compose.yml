@@ -1,0 +1,47 @@
+version: "3.8"
+volumes:
+  texto_database:
+  texto_data:
+
+services:
+  texto_website:
+    container_name: texto_website
+    image: harbor.ftnl.link/texto/app:latest
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.texto.rule=Host(`example.com`)"
+      - "traefik.http.routers.texto.entrypoints=websecure"
+      - "traefik.http.routers.texto.service=textolb"
+      - "traefik.http.routers.texto.tls.certresolver=production"
+      - "traefik.http.services.textolb.loadbalancer.server.port=8080"
+    volumes:
+      - texto_data:/app/pages
+      - texto_database:/app/database
+    environment:
+      TEXTO_BASE_URL: "https://example.com"
+      DISCORD_CLIENT_ID: "CLIENT_ID"
+      DISCORD_CLIENT_SECRET: "CLIENT_SECRET"
+
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    restart: "always"
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+      - "--certificatesresolvers.default.acme.email=${EMAIL_ADDRESS}"
+      - "--certificatesresolvers.default.acme.storage=/etc/traefik/acme.json"
+      - "--certificatesresolvers.default.acme.tlschallenge=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./traefik-data:/etc/traefik"
+    labels:
+      - "traefik.enable=true"
