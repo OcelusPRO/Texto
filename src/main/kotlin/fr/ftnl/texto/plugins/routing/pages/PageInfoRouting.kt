@@ -95,7 +95,7 @@ fun Route.getPage(){
     }
 
     get("/raw/{texto_id}"){
-        val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
+        val textoId = call.parameters["texto_id"] ?: return@get call.respond(HttpStatusCode.NotFound)
         val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
         call.respond(HttpStatusCode.OK, info.texto.content)
     }
