@@ -12,6 +12,13 @@ if (rawButton){
     })
 }
 
+const gitButton = document.getElementById("menu-git")
+if (gitButton){
+    gitButton.addEventListener('click', () => {
+        window.open(`https://github.com/OcelusPRO/Texto`);
+    })
+}
+
 const copyButton = document.getElementById("menu-copy")
 const code = document.getElementById("codeZone")
 if (copyButton){
