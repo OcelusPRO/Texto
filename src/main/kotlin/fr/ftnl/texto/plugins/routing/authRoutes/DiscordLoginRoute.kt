@@ -33,6 +33,7 @@ data class UserConnection(
 fun Route.discordLoginRoute() {
     authenticate("discord_oauth") {
         get("/login") {
+            call.sessions.clear<UserSession>()
             call.respondRedirect("/clb")
         }
         get("/clb") {
