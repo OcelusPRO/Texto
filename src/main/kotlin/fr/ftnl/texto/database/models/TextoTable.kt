@@ -1,10 +1,8 @@
 package fr.ftnl.texto.database.models
 
-import com.github.benmanes.caffeine.cache.Expiry
 import fr.ftnl.texto.database.abstract.BaseIntEntity
 import fr.ftnl.texto.database.abstract.BaseIntEntityClass
 import fr.ftnl.texto.database.abstract.BaseIntIdTable
-import fr.ftnl.texto.ext.md5
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.jodatime.datetime
@@ -19,7 +17,7 @@ object TextoTable : BaseIntIdTable("TBL_TEXTO_TXT") {
     val keyHash = varchar("key_hash", 255).uniqueIndex()
     val name = varchar("name", 100)
     val description = text("description")
-    val vues = integer("vues").default(0)
+    val views = integer("vues").default(0)
     val public = bool("public").default(false)
     val expireAt = datetime("expire_at").nullable()
 }
@@ -51,10 +49,10 @@ class Texto(id: EntityID<Int>): BaseIntEntity(id, TextoTable) {
         get() = transaction { _author }
 
 
-    private var _vues by TextoTable.vues
-    var vues: Int
-        get() = transaction { _vues }
-        set(value) = transaction { _vues = value }
+    private var _views by TextoTable.views
+    var views: Int
+        get() = transaction { _views }
+        set(value) = transaction { _views = value }
 
     private var _name by TextoTable.name
     val name: String
