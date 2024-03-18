@@ -30,12 +30,11 @@ class DBManager(config: ApplicationConfig) {
     }
     private fun getDbUrl(config: ApplicationConfig): String {
         val host = config.property("database.host").getString()
-        val name = config.propertyOrNull("database.name")?.getString()
+        val name = config.propertyOrNull("database.name")?.getString() ?: ""
 
         return when(config.property("database.type").getString()){
-            "mssql" -> "jdbc:sqlserver://$host;databaseName=$name"
+            "mssql" -> "jdbc:sqlserver://$host${if (name.isNotBlank()) ";databaseName=$name" else ""}"
             "h2" -> "jdbc:h2:$host"
-            //"sqlite" -> "jdbc:sqlite:$host"
             "mariadb" -> "jdbc:mariadb://$host/$name"
             "mysql" -> "jdbc:mysql://$host/$name"
             "pgsql" -> "jdbc:pgsql://$host/$name"
