@@ -86,6 +86,8 @@ fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
         "twitch" -> "https://twitch.tv/$name"
         "twitter" -> "https://twitter.com/$name"
         "youtube" -> "https://youtube.com/channel/$id"
+        "github" -> "https://github.com/$name"
+        "spotify" -> "https://open.spotify.com/user/$id"
         "domain" -> id
         else -> null
     }
@@ -97,6 +99,8 @@ fun socialMediaTypeTransformer(type: String): String {
         "twitch" -> "fa-brands fa-twitch"
         "twitter" -> "fa-brands fa-x-twitter"
         "youtube" -> "fa-brands fa-youtube"
+        "github" -> "fa-brands fa-github"
+        "spotify" -> "fa-brands fa-spotify"
         else -> type
     }
 }
