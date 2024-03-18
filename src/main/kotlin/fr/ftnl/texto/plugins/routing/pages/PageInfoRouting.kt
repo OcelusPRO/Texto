@@ -1,7 +1,5 @@
 package fr.ftnl.texto.plugins.routing.pages
 
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
 import com.google.gson.Gson
 import fr.ftnl.texto.database.models.Author
 import fr.ftnl.texto.database.models.Texto
@@ -9,19 +7,17 @@ import fr.ftnl.texto.ext.md5
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.ViewSession
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.mustache.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import java.io.File
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.toJavaDuration
 
 fun Route.getPage(){
-    fun getPageInfo(pageId: String): PageInfo? {
+    fun getPageInfo(pageId: String, increment: Boolean): PageInfo? {
         val file = File("./pages/${pageId.md5()}")
         if (file.exists().not()) return null
 
@@ -38,46 +34,36 @@ fun Route.getPage(){
             return null
         }
 
+        if (increment && texto != null) texto.views++
+        
         val info = PageInfo(
             TextoInfo(
                 content = file.readText(),
                 title = texto!!.name,
                 description = texto.description,
-                views = texto.vues
+                views = texto.views
             ),
             AuthorInfo(
                 avatar = texto.author.avatarUrl,
                 name = texto.author.name,
                 social = texto.author.social.map { SocialMedia(it.url, it.iconName) },
-                vues = texto.author.textos.sumOf { it.vues },
+                vues = texto.author.textos.sumOf { it.views },
                 texto = texto.author.textos.size
             )
         )
         return info
     }
-    val pageCache: Cache<String, PageInfo?> = Caffeine.newBuilder()
-        .expireAfterWrite(5.minutes.toJavaDuration())
-        .removalListener { key: String?, value: PageInfo?, cause ->
-            if (key == null) return@removalListener
-            if (value == null) return@removalListener
-            val texto = Texto.get(key) ?: return@removalListener
-            texto.vues = value.texto.views
-        }
-        .build()
 
     get("/{texto_id}"){
         val textoId = call.parameters["texto_id"]?: return@get call.respond(HttpStatusCode.NotFound)
-        val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
-
         val userSession = call.sessions.get<UserSession>()
         val viewSession = call.sessions.get<ViewSession>() ?: ViewSession()
 
-        if(viewSession.pageViews.contains(textoId).not()){
-            info.texto.views+=1
-            info.author.views+=1
-            pageCache.put(textoId, info)
-        }
-        viewSession.pageViews.add(textoId)
+        val isNotBot = call.request.userAgent()?.contains("bot") == false
+        val newView = viewSession.pageViews.contains(textoId).not()
+
+        val info = getPageInfo(textoId, isNotBot and newView) ?: return@get call.respond(HttpStatusCode.NotFound)
+        if (newView) viewSession.pageViews.add(textoId)
 
         if (userSession?.discordUser != null) {
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
@@ -96,7 +82,7 @@ fun Route.getPage(){
 
     get("/raw/{texto_id}"){
         val textoId = call.parameters["texto_id"] ?: return@get call.respond(HttpStatusCode.NotFound)
-        val info = pageCache.get(textoId, ::getPageInfo) ?: return@get call.respond(HttpStatusCode.NotFound)
+        val info = getPageInfo(textoId, false) ?: return@get call.respond(HttpStatusCode.NotFound)
         call.respond(HttpStatusCode.OK, info.texto.content)
     }
 
@@ -109,12 +95,12 @@ fun Route.getPage(){
 
             call.respondRedirect("/author/${texto.author.name.clean}")
             texto.deleteOnTransaction()
-            getPageInfo(textoId)
+            getPageInfo(textoId, false)
         }
 
         get("/new"){
             val query = call.request.queryParameters["from"]
-            val pageInfo = (if (query != null) getPageInfo(query) else PageInfo()) ?: PageInfo()
+            val pageInfo = (if (query != null) getPageInfo(query, false) else PageInfo()) ?: PageInfo()
 
             val session = call.sessions.get<UserSession>()
             val author = session?.discordUser?.email?.let { Author.getByEmail(it) }
@@ -124,7 +110,7 @@ fun Route.getPage(){
                 author.avatarUrl,
                 author.name,
                 author.social.map { SocialMedia(it.url, it.iconName) },
-                author.textos.sumOf { it.vues },
+                author.textos.sumOf { it.views },
                 author.textos.size
             )
 
