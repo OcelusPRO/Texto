@@ -8,7 +8,7 @@ document.getElementById("codeZone").classList.add(get_url_extension(document.URL
 const rawButton = document.getElementById("menu-raw")
 if (rawButton){
     rawButton.addEventListener('click', () => {
-        window.open(`/raw/${window.location.pathname}`);
+        window.open(`/raw${window.location.pathname}`);
     })
 }
 
