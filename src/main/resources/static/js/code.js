@@ -83,7 +83,7 @@ if (saveButton) {
             "title": title.value,
             "description": description.value,
             "public": publicCheck.checked,
-            "expire": Date.now() + (expire*1000)
+            "expire": expire !== 0 ? Date.now() + (expire*1000) : null
         });
         const requestOptions = {method: "POST", headers: myHeaders, body: raw, redirect: "follow"};
         const protocol = window.location.protocol
