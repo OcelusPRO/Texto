@@ -89,7 +89,7 @@ fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
         "youtube" -> "https://youtube.com/channel/$id"
         "github" -> "https://github.com/$name"
         "spotify" -> "https://open.spotify.com/user/$id"
-        "domain" -> id
+        "domain" -> "http://$id"
         else -> null
     }
 }
