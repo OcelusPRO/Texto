@@ -15,7 +15,7 @@ body {
 .tooltip {
     display:inline-block;
     position:relative;
-    text-align:left;
+    text-align:center;
 }
 
 .tooltip .bottom {
@@ -66,4 +66,8 @@ input:focus::placeholder {
 
 textarea:focus::placeholder {
     color: transparent;
+}
+
+#codeZone {
+    margin-left: 1em;
 }
