@@ -7,7 +7,6 @@ import fr.ftnl.texto.ext.md5
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.ViewSession
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.mustache.*
 import io.ktor.server.request.*
@@ -15,6 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.dao.id.EntityID
 import java.io.File
 
 fun Route.getPage(){
@@ -47,8 +47,9 @@ fun Route.getPage(){
             AuthorInfo(
                 avatar = texto.author.avatarUrl,
                 name = texto.author.name,
+                id = texto.author.id,
                 social = texto.author.social.map { SocialMedia(it.url, it.iconName) },
-                vues = texto.author.textos.sumOf { it.views },
+                views = texto.author.textos.sumOf { it.views },
                 texto = texto.author.textos.size
             )
         )
@@ -68,7 +69,7 @@ fun Route.getPage(){
 
         if (userSession?.connectedEmailHash != null) {
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
-            val author = userSession.connectedEmailHash.let { Author.getByEmail(it) }
+            val author = userSession.connectedEmailHash.let { Author.getByEmailHash(it) }
             info.connected = UserInfo(
                 author?.name ?: "",
                 author?.avatarUrl ?: "",
@@ -91,7 +92,7 @@ fun Route.getPage(){
         get("/{texto_id}/delete"){
             val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
-            val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmail(it) }?.id
+            val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmailHash(it) }?.id
             if (author != texto.author.id) return@get call.respond(HttpStatusCode.Unauthorized)
 
             call.respondRedirect("/author/${texto.author.name.clean}")
@@ -104,12 +105,17 @@ fun Route.getPage(){
             val pageInfo = (if (query != null) getPageInfo(query, false) else PageInfo()) ?: PageInfo()
 
             val session = call.sessions.get<UserSession>()
-            val author = session?.connectedEmailHash?.let { Author.getByEmail(it) }
-                ?: return@get call.respond(HttpStatusCode.Unauthorized)
+            val author = session?.connectedEmailHash?.let { Author.getByEmailHash(it) }
+
+            if (author == null){
+                println("author est null")
+                return@get call.respond(HttpStatusCode.Unauthorized)
+            }
 
             val authorInfo = AuthorInfo(
                 author.avatarUrl,
                 author.name,
+                author.id,
                 author.social.map { SocialMedia(it.url, it.iconName) },
                 author.textos.sumOf { it.views },
                 author.textos.size
@@ -163,20 +169,8 @@ data class AuthorInfo(
     var views: Int = 0,
     val textos: Int = 0
 ) {
-    constructor(
-        avatar: String,
-        name: String,
-        social: List<SocialMedia>,
-        vues: Int,
-        texto: Int
-    ) : this(
-        avatar,
-        name,
-        name.clean,
-        Gson().toJson(social),
-        vues,
-        texto
-    )
+    constructor(avatar: String, name: String, id: EntityID<Int>, social: List<SocialMedia>, views: Int, texto: Int) :
+            this(avatar, name, id.toString(), Gson().toJson(social), views, texto)
 }
 
 @Serializable

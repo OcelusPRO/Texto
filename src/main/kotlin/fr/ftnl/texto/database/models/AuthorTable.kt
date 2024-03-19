@@ -20,6 +20,11 @@ class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
             find { AuthorTable.email eq hashSha3512(email) }.firstOrNull()
         }
 
+        fun getByEmailHash(email: String) = transaction {
+            find { AuthorTable.email eq email }.firstOrNull()
+        }
+
+
         fun getByApiKey(key: String) = transaction {
             find { AuthorTable.apiKey eq key }.firstOrNull()
         }

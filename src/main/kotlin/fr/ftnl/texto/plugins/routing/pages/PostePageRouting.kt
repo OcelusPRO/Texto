@@ -56,7 +56,7 @@ fun Route.postPage(){
         authenticate("auth-session") {
             rateLimit(RateLimitName("post_texto_user")) {
                 post("/user") {
-                    val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmail(it) } ?: return@post
+                    val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmailHash(it) } ?: return@post
                     val postData = call.receive<PostData>()
                     val key = newPost(
                         postData.content,
