@@ -7,6 +7,7 @@ import fr.ftnl.texto.ext.md5
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.ViewSession
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.mustache.*
 import io.ktor.server.request.*
@@ -65,12 +66,12 @@ fun Route.getPage(){
         val info = getPageInfo(textoId, isNotBot and newView) ?: return@get call.respond(HttpStatusCode.NotFound)
         if (newView) viewSession.pageViews.add(textoId)
 
-        if (userSession?.discordUser != null) {
+        if (userSession?.connectedEmailHash != null) {
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
-            val author = userSession.discordUser?.email?.let { Author.getByEmail(it) }
+            val author = userSession.connectedEmailHash.let { Author.getByEmail(it) }
             info.connected = UserInfo(
-                userSession.discordUser?.username ?: "",
-                userSession.discordUser?.avatar ?: "",
+                author?.name ?: "",
+                author?.avatarUrl ?: "",
                 true,
                 author?.id == texto.author.id
             )
@@ -86,11 +87,11 @@ fun Route.getPage(){
         call.respond(HttpStatusCode.OK, info.texto.content)
     }
 
-    authenticate("discord_oauth") {// TODO change it whene twitch login implementation
+    authenticate("auth-session") {
         get("/{texto_id}/delete"){
             val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
-            val author = call.sessions.get<UserSession>()?.discordUser?.email?.let { Author.getByEmail(it) }?.id
+            val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmail(it) }?.id
             if (author != texto.author.id) return@get call.respond(HttpStatusCode.Unauthorized)
 
             call.respondRedirect("/author/${texto.author.name.clean}")
@@ -103,7 +104,7 @@ fun Route.getPage(){
             val pageInfo = (if (query != null) getPageInfo(query, false) else PageInfo()) ?: PageInfo()
 
             val session = call.sessions.get<UserSession>()
-            val author = session?.discordUser?.email?.let { Author.getByEmail(it) }
+            val author = session?.connectedEmailHash?.let { Author.getByEmail(it) }
                 ?: return@get call.respond(HttpStatusCode.Unauthorized)
 
             val authorInfo = AuthorInfo(
@@ -116,8 +117,8 @@ fun Route.getPage(){
 
             pageInfo.author = authorInfo
             pageInfo.connected = UserInfo(
-                session.discordUser?.username ?: "",
-                session.discordUser?.avatar ?: "",
+                author.name ?: "",
+                author.avatarUrl ?: "",
                 true,
                 false
             )
