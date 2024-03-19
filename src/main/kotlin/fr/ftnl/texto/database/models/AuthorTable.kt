@@ -8,8 +8,8 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object AuthorTable : BaseIntIdTable("TBL_AUTHOR_AUT") {
-    val email = integer("user_email_hash").uniqueIndex()
-    val name = varchar("name", 25)
+    val email = varchar("user_email_hash", 128).uniqueIndex()
+    val name = varchar("name", 25).uniqueIndex()
     val avatarUrl = varchar("avatar", 255)
     val apiKey = varchar("api_key", 255)
 }
@@ -17,15 +17,16 @@ object AuthorTable : BaseIntIdTable("TBL_AUTHOR_AUT") {
 class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
     companion object : BaseIntEntityClass<Author>(AuthorTable) {
         fun getByEmail(email: String) = transaction {
-            find { AuthorTable.email eq email.hashCode() }.firstOrNull()
+            find { AuthorTable.email eq hashSha3512(email) }.firstOrNull()
         }
+
         fun getByApiKey(key: String) = transaction {
             find { AuthorTable.apiKey eq key }.firstOrNull()
         }
 
         fun create(email: String, name: String, avatar: String?) = transaction {
             new {
-                _email = email.hashCode()
+                _email = hashSha3512(email)
                 _name = name
                 _avatarUrl = avatar ?: "/static/images/Unknown_person.jpg"
                 _apiKey = String.keyGen(255)
