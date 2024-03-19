@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="/static/style/tailwind.css" >
+    <link rel="stylesheet" href="/static/style/style.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
+
+    <link rel="stylesheet" href="/static/style/hljs.min.css" >
+    <script src="/static/js/highlight.min.js"></script>
+
+    <meta property="og:title" content="Login">
+    <meta property="og:description" content="Connexion aux services de Texto !">
+    <meta property="og:site_name" content="Texto">
+    <meta property="og:image" content="/static/images/logo.jpg">
+
+    <title>Texto</title>
+</head>
+<body>
+
+
+
+<div class="h-screen">
+    <div class="flex h-full flex-col">
+        <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl text-white">
+            <div class="flex-1 italic">
+                <span class="ml-4">TEXTO</span>
+            </div>
+            <div class="flex flex-1 items-center justify-center space-x-2">
+                <button id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
+                    <div class="bottom">
+                        <p>Github</p>
+                    </div>
+                </button>
+            </div>
+            <div class="flex flex-1 justify-end">
+                {{#connected.connected}}
+                    <img class="h-full w-8  mr-1 rounded-full" src="{{ connected.avatar }}" alt="avatar">
+                {{/connected.connected}}
+                {{^connected.connected}}
+                    <a href="/login"><div class="px-2 mr-1 bg-gray-700 rounded-lg">Login</div></a>
+                {{/connected.connected}}
+            </div>
+        </div>
+        <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white">
+
+            <div class="w-full h-56 flex justify-center">
+                <div class="w-96 p-3 bg-gray-800 rounded-xl text-center items-center">
+                    <form action="/login/form" method="post" >
+                        <div>
+                            <label for="username_email">Username/Email :</label><br>
+                            <input type="text" id="identifier" name="identifier" required><br>
+                        </div>
+                        <div>
+                            <label for="password">Mot de passe :</label><br>
+                            <input type="password" id="password" name="password" required><br>
+                        </div>
+                        <div>
+                            <button type="submit" class="px-2 mr-1 bg-gray-700 rounded-lg">Se Connecter</button>
+                        </div>
+                    </form>
+
+                    <div class="flex flex-col">
+                        <div class="text-2xl">Connexion avec</div>
+                        <a href="/login/discord"><button class="px-2 mr-1 bg-gray-700 rounded-lg">Discord</button></a>
+                        <a href="/login/twitch"><button class="px-2 mr-1 bg-gray-700 rounded-lg">Twitch</button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/code.js"></script>
+</body>
+</html>

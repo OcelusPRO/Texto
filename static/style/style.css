@@ -12,6 +12,10 @@ body {
     font-family: JBML, serif
 }
 
+.numberList {
+    margin-right: 1rem;
+}
+
 .tooltip {
     display:inline-block;
     position:relative;
@@ -66,8 +70,4 @@ input:focus::placeholder {
 
 textarea:focus::placeholder {
     color: transparent;
-}
-
-#codeZone {
-    margin-left: 1em;
 }
