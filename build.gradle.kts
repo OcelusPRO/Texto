@@ -70,7 +70,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:0.8.9")
     implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
-    implementation("com.h2database:h2:2.2.224")
+    implementation("com.h2database:h2:1.4.200")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.3.1")
 
     implementation("com.zaxxer:HikariCP:4.0.3")
