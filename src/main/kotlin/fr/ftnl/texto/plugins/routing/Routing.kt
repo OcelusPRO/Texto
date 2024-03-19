@@ -21,6 +21,7 @@ import io.ktor.server.sessions.*
 import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureRouting(config: ApplicationConfig) {
+fun Application.configureRouting() {
     install(AutoHeadResponse)
     install(DoubleReceive)
     install(Resources)

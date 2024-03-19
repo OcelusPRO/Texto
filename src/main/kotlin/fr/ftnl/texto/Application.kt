@@ -28,7 +28,7 @@ fun Application.module() {
     configureMonitoring()
     configureSerialization()
     configureTemplating()
-    configureRouting(environment.config)
+    configureRouting()
 }
 
 fun Application.startup(){
