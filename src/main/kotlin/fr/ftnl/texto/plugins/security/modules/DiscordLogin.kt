@@ -14,7 +14,7 @@ fun AuthenticationConfig.discordLogin(cfg: ApplicationConfig) {
             session?.discordUser != null
         }
 
-        urlProvider = { cfg.property("texto.baseUrl").getString() + "/clb" }
+        urlProvider = { cfg.property("texto.baseUrl").getString() + "/login/discord/clb" }
         providerLookup = {
             OAuthServerSettings.OAuth2ServerSettings(
                 name = "discord",

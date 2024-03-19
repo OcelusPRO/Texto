@@ -3,19 +3,18 @@ package fr.ftnl.texto.plugins.routing.authRoutes
 import fr.ftnl.texto.HTTP_CLIENT
 import fr.ftnl.texto.database.models.Author
 import fr.ftnl.texto.database.models.SocialMedia
+import fr.ftnl.texto.database.models.hashSha3512
 import fr.ftnl.texto.plugins.DiscordUser
 import fr.ftnl.texto.plugins.UserSession
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.math.log
 
 @Serializable
 data class UserConnection(
@@ -32,7 +31,7 @@ data class UserConnection(
 
 fun Route.discordLoginRoute() {
     authenticate("discord_oauth") {
-        get("/login") {
+        get {
             call.sessions.clear<UserSession>()
             call.respondRedirect("/clb")
         }
@@ -73,7 +72,10 @@ fun Route.discordLoginRoute() {
             user.social.filter { it.url !in cons.map { c -> c.second } }.forEach { it.deleteOnTransaction() }
 
             result.avatar = "https://cdn.discordapp.com/avatars/${result.id}/${result.avatar}"
-            val session = UserSession(result, result.email.hashCode())
+            val session = UserSession(
+                discordUser = result,
+                connectedEmailHash = hashSha3512(result.email)
+            )
             call.sessions.set(session)
             println(user.apiKey)
             call.respondRedirect("/")
@@ -81,7 +83,7 @@ fun Route.discordLoginRoute() {
     }
 }
 
-fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
+private fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
     return when(type) {
         "steam" -> "https://steamcommunity.com/profiles/$id"
         "twitch" -> "https://twitch.tv/$name"
@@ -93,7 +95,7 @@ fun socialMediaUrlTransformer(type: String, name: String, id: String): String? {
         else -> null
     }
 }
-fun socialMediaTypeTransformer(type: String): String {
+private fun socialMediaTypeTransformer(type: String): String {
     return when(type) {
         "domain" -> "fa-solid fa-link"
         "steam" -> "fa-brands fa-steam-symbol"
