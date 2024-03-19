@@ -2,6 +2,7 @@ package fr.ftnl.texto.plugins.routing
 
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.routing.authRoutes.discordLoginRoute
+import fr.ftnl.texto.plugins.routing.authRoutes.login
 import fr.ftnl.texto.plugins.routing.pages.getPage
 import fr.ftnl.texto.plugins.routing.pages.postPage
 import io.ktor.http.*
@@ -18,18 +19,24 @@ import io.ktor.server.resources.Resources
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
-fun Application.configureRouting(config: ApplicationConfig) {
 fun Application.configureRouting() {
+    val path = if (System.getenv("dev") != null) "." else "/opt/program"
+
     install(AutoHeadResponse)
     install(DoubleReceive)
     install(Resources)
     install(StatusPages) {
 
         status(HttpStatusCode.NotFound) { call, status -> call.respondText(text = "404: Page Not Found", status = status) }
+        status(HttpStatusCode.Unauthorized) { call, status ->
+            println(call.sessions.get<UserSession>())
+            call.respond(status, "Unauthorized")
+        }
 
-        exception<BadRequestException> { call, cause -> call.respond(HttpStatusCode.BadRequest) }
+        exception<BadRequestException> { call, _ -> call.respond(HttpStatusCode.BadRequest) }
         exception<Throwable> { call, cause ->
             cause.printStackTrace()
             call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
@@ -59,12 +66,11 @@ fun Application.configureRouting() {
     }
 
     routing {
-        discordLoginRoute()
+        route("/login") { login() }
         getPage()
         postPage()
 
-
-        staticResources("/static", "static")
-        staticResources("/", "static/pages")
+        staticFiles("/static", File("$path/static"))
+        staticFiles("/", File("$path/static/pages"))
     }
 }
