@@ -76,6 +76,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:4.0.3")
 
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation("org.springframework.security:spring-security-crypto:6.0.3")
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
