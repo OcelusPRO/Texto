@@ -6,12 +6,8 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="/static/style/tailwind.css" >
-    <link rel="stylesheet" href="/static/style/style.css" >
+    <link rel="stylesheet" href="/static/style/global.css" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
-
-    <link rel="stylesheet" href="/static/style/hljs.min.css" >
-    <script src="/static/js/highlight.min.js"></script>
 
     <meta property="og:title" content="Login">
     <meta property="og:description" content="Connexion aux services de Texto !">
@@ -22,8 +18,6 @@
 </head>
 <body>
 
-
-
 <div class="h-screen">
     <div class="flex h-full flex-col">
         <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl text-white">
@@ -31,7 +25,7 @@
                 <span class="ml-4">TEXTO</span>
             </div>
             <div class="flex flex-1 items-center justify-center space-x-2">
-                <button id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
+                <button name="Github" id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
                     <div class="bottom">
                         <p>Github</p>
                     </div>
@@ -48,27 +42,90 @@
         </div>
         <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white">
 
-            <div class="w-full h-56 flex justify-center">
-                <div class="w-96 p-3 bg-gray-800 rounded-xl text-center items-center">
-                    <form action="/login/form" method="post" >
-                        <div>
-                            <label for="username_email">Username/Email :</label><br>
-                            <input type="text" id="identifier" name="identifier" required><br>
-                        </div>
-                        <div>
-                            <label for="password">Mot de passe :</label><br>
-                            <input type="password" id="password" name="password" required><br>
-                        </div>
-                        <div>
-                            <button type="submit" class="px-2 mr-1 bg-gray-700 rounded-lg">Se Connecter</button>
-                        </div>
-                    </form>
+            <div class="w-full flex justify-center">
+                <div class="flex flex-col w-96 p-3 bg-gray-800 rounded-xl text-center items-center h-96 justify-evenly">
+                    <div class="text-3xl">LOGIN</div>
+                    <form action="/login/form" method="post" class="flex flex-col items-center w-full">
 
-                    <div class="flex flex-col">
-                        <div class="text-2xl">Connexion avec</div>
-                        <a href="/login/discord"><button class="px-2 mr-1 bg-gray-700 rounded-lg">Discord</button></a>
-                        <a href="/login/twitch"><button class="px-2 mr-1 bg-gray-700 rounded-lg">Twitch</button></a>
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="text"
+                                    id="identifier"
+                                    name="identifier"
+                                    placeholder="Username/Email"
+                                    required
+                            >
+                        </div>
+
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    required
+                            >
+                        </div>
+
+                        <div class="w-full flex justify-between center items-center">
+                            <a href="/register" class="text-gray-600">Crée un compte</a>
+                            <button
+                                    class="
+                                        flex items-center bg-gray-700 rounded-lg shadow-md h-10
+                                        px-6 py-2 text-sm font-medium text-white hover:bg-gray-500 focus:outline-none
+                                        focus:ring-2 focus:ring-offset-2 focus:ring-gray-600"
+                                    type="submit"
+                            ><span>
+                                    Se Connecter
+                                </span>
+                            </button>
+                        </div>
+
+                    </form>
+                    <div class="flex flex-col w-full">
+                        <div class="flex items-center my-4">
+                            <div class="flex-grow border-t border-gray-400 border-1"></div>
+                            <div class="px-3 font-bold text-md ">OR</div>
+                            <div class="flex-grow border-t border-gray-400 border-1"></div>
+                        </div>
+                        <a href="/login/discord" class="m-1">
+                            <div class="flex items-center justify-center">
+                                <button class="
+                                        flex items-center bg-discord rounded-lg shadow-md w-full
+                                        px-6 py-2 text-sm font-medium text-white hover:bg-gray-200 focus:outline-none
+                                        focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+
+
+                                    <div class="flex flex-row justify-evenly w-full">
+                                        <span class="w-6 h-6">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36"><path fill="#fff" d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/></svg>
+                                        </span>
+                                        <span>Connexion avec Discord</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </a>
+                        <a href="/login/twitch" class="m-1">
+                            <div class="flex items-center justify-center">
+                                <button
+                                        class="
+                                        flex items-center bg-twitch rounded-lg shadow-md  w-full
+                                        px-6 py-2 text-sm font-medium text-white hover:bg-gray-200 focus:outline-none
+                                        focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                >
+                                    <div class="flex flex-row justify-evenly w-full">
+                                        <span class="w-6 h-6">
+                                            <?xml version="1.0" encoding="utf-8"?><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 2400 2800" style="enable-background:new 0 0 2400 2800;" xml:space="preserve"><style type="text/css">.st0{fill:#FFFFFF;}</style><title>Asset 3</title><g><g id="Layer_1-2"><path class="st0" d="M500,0L0,500v1800h600v500l500-500h400l900-900V0H500z M2200,1300l-400,400h-400l-350,350v-350H600V200h1600 V1300z"/><rect x="1700" y="550" class="st0" width="200" height="600"/><rect x="1150" y="550" class="st0" width="200" height="600"/></g></g></svg>
+                                        </span>
+                                        <span>Connexion avec Twitch</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </a>
                     </div>
+
                 </div>
             </div>
         </div>
