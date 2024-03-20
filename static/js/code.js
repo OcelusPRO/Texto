@@ -75,7 +75,7 @@ const saveButton = document.getElementById("menu-save")
 if (saveButton) {
     const title = document.getElementById("title")
     const description = document.getElementById("description")
-    const publicCheck = document.getElementById("public")
+    const publicCheck = document.getElementById("toggleTwo")
     const expire = document.getElementById("expiration").value
     saveButton.addEventListener("click", () => {
         const myHeaders = new Headers();

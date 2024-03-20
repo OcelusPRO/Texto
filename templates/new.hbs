@@ -6,8 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="/static/style/tailwind.css" >
-    <link rel="stylesheet" href="/static/style/style.css" >
+    <link rel="stylesheet" href="/static/style/global.css" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
 
     <link rel="stylesheet" href="/static/style/hljs.min.css" >
@@ -22,21 +21,20 @@
 </head>
 <body>
 
-
-
 <div class="h-screen">
     <div class="flex h-full flex-col">
+
         <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl text-white">
             <div class="flex-1 italic">
                 <span class="ml-4">TEXTO</span>
             </div>
             <div class="flex flex-1 items-center justify-center space-x-2">
-                <button id="menu-save" class="h-6 w-6 tooltip"><i class="fa-regular fa-floppy-disk"></i>
+                <button name="Save" id="menu-save" class="h-6 w-6 tooltip"><i class="fa-regular fa-floppy-disk"></i>
                     <div class="bottom">
                         <p>Enregistrer</p>
                     </div>
                 </button>
-                <button id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
+                <button name="Github" id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
                     <div class="bottom">
                         <p>Github</p>
                     </div>
@@ -51,21 +49,23 @@
 {{/connected.connected}}
             </div>
         </div>
-        <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white h-full">
-            <div class="flex-1 h-full">
+
+        <div class="flex flex-col-reverse md:flex-row  overflow-y-auto bg-gray-700 p-4 text-white h-full">
+
+
+            <div class="flex-1 min-h-full md:h-full">
                 <div class="flex flex-row h-full">
-                    <div class="flex-col" id="number-list">
-                        <!-- générer automatiquement selon le nombre de lignes -->
-                    </div>
+                    <div class="flex-col" id="number-list"><div class="w-4 text-gray-400">1</div></div>
                     <textarea
                             class="bg-gray-700 resize-none w-full h-full mx-2"
                             id="codeZone"
-                            placeholder="Contenu de votre texto"
-                    >{{texto.content}}</textarea>
+                            placeholder="Contenu de votre texto">{{texto.content}}</textarea>
                 </div>
             </div>
-            <div class="relative w-96">
-                <div class="fixed right-18 flex h-auto w-96 flex-col items-center space-y-5 rounded-xl bg-gray-800 p-6">
+
+
+            <div class="md:relative w-full md:w-96">
+                <div class="md:fixed md:right-18 flex h-auto w-full md:w-96 flex-col items-center space-y-5 rounded-xl bg-gray-800 p-6">
                     <a href="/author/{{ author.cleanName }}">
                         <img class="h-40 w-40 rounded-full" src="{{ author.avatar }}" alt="avatar">
                     </a>
@@ -115,10 +115,16 @@
                             <option value="31536000">1 ans</option>
                             <option value="0">Jamais</option>
                         </select>
-                        <label class="inline-flex items-center me-5 cursor-pointer">
-                            <input id="public" type="checkbox" value="" class="sr-only peer" checked>
-                            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                            <span class="ms-3 text-sm font-medium text-white">Publique</span>
+
+                        <label for="toggleTwo" class="items-center cursor-pointer text-white">
+                            <div class="relative flex flex-row items-center">
+                                <input type="checkbox" id="toggleTwo" class="peer sr-only" checked/>
+                                <div class="block h-8 rounded-full bg-gray-800 w-14 peer-checked:bg-green-500 peer-checked:transition-colors"></div>
+                                <div class="absolute w-6 h-6 transition bg-white rounded-full dot bg-dark-4 left-1 top-1 peer-checked:translate-x-full"></div>
+                                <span class="mx-2 hidden peer-checked:block">Publique</span>
+                                <span class="mx-2 block peer-checked:hidden">Privé</span>
+                            </div>
+
                         </label>
 
                     </div>
@@ -127,7 +133,6 @@
         </div>
     </div>
 </div>
-
 
 <script src="/static/js/code.js"></script>
 </body>
