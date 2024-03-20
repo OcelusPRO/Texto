@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="/static/style/global.css" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" >
+
+    <meta property="og:title" content="Login">
+    <meta property="og:description" content="Connexion aux services de Texto !">
+    <meta property="og:site_name" content="Texto">
+    <meta property="og:image" content="{{ website.baseUrl }}/static/images/logo_texto.jpg">
+
+    <title>Texto</title>
+</head>
+<body>
+
+<div class="h-screen">
+    <div class="flex h-full flex-col">
+        <div class="flex h-auto justify-between bg-gray-800 py-2 text-2xl text-white">
+            <div class="flex-1 italic">
+                <span class="ml-4">TEXTO</span>
+            </div>
+            <div class="flex flex-1 items-center justify-center space-x-2">
+                <button name="Github" id="menu-git" class="h-6 w-6 tooltip"><i class="fa-brands fa-github"></i>
+                    <div class="bottom">
+                        <p>Github</p>
+                    </div>
+                </button>
+            </div>
+            <div class="flex flex-1 justify-end">
+                {{#connected.connected}}
+                    <img class="h-full w-8  mr-1 rounded-full" src="{{ connected.avatar }}" alt="avatar">
+                {{/connected.connected}}
+                {{^connected.connected}}
+                    <a href="/login"><div class="px-2 mr-1 bg-gray-700 rounded-lg">Login</div></a>
+                {{/connected.connected}}
+            </div>
+        </div>
+        <div class="flex flex-1 overflow-y-auto bg-gray-700 p-4 text-white">
+
+            <div class="w-full flex justify-center">
+                <div class="flex flex-col w-96 p-3 bg-gray-800 rounded-xl text-center items-center h-80 justify-evenly">
+                    <div class="text-3xl">REGISTER</div>
+                    <form action="/register/form" method="post" class="flex flex-col items-center w-full">
+
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    placeholder="Username"
+                                    pattern="[a-Z0-9]{4,25}"
+                                    required
+                            >
+                        </div>
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Email"
+                                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,10}$"
+                                    required
+                            >
+                        </div>
+
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Password"
+                                    required
+                            >
+                        </div>
+                        <div class="flex flex-col mb-2 w-full">
+                            <input
+                                    class="w-full h-12 bg-gray-700 rounded-lg placeholder:ml-2"
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    placeholder="Confirm password"
+                                    required
+                            >
+                        </div>
+
+                        <div class="w-full flex justify-between center items-center">
+                            <a href="/register" class="text-gray-600">Crée un compte</a>
+                            <button
+                                    class="
+                                        flex items-center bg-gray-700 rounded-lg shadow-md h-10
+                                        px-6 py-2 text-sm font-medium text-white hover:bg-gray-500 focus:outline-none
+                                        focus:ring-2 focus:ring-offset-2 focus:ring-gray-600"
+                                    type="submit"
+                            >
+                                <span>
+                                    Crée le compte
+                                </span>
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/code.js"></script>
+</body>
+</html>

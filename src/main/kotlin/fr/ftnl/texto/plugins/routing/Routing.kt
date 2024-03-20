@@ -1,13 +1,12 @@
 package fr.ftnl.texto.plugins.routing
 
 import fr.ftnl.texto.plugins.UserSession
-import fr.ftnl.texto.plugins.routing.authRoutes.discordLoginRoute
 import fr.ftnl.texto.plugins.routing.authRoutes.login
+import fr.ftnl.texto.plugins.routing.authRoutes.register
 import fr.ftnl.texto.plugins.routing.pages.getPage
 import fr.ftnl.texto.plugins.routing.pages.postPage
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.config.*
 import io.ktor.server.http.content.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.autohead.*
@@ -67,6 +66,7 @@ fun Application.configureRouting() {
 
     routing {
         route("/login") { login() }
+        route("/register") { register() }
         getPage()
         postPage()
 
