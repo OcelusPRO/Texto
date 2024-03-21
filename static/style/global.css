@@ -583,6 +583,9 @@ video {
 .h-8 {
     height: 2rem;
 }
+.h-80 {
+    height: 20rem;
+}
 .h-96 {
     height: 24rem;
 }
@@ -594,12 +597,6 @@ video {
 }
 .h-screen {
     height: 100vh;
-}
-.h-80 {
-    height: 20rem;
-}
-.h-72 {
-    height: 18rem;
 }
 .min-h-full {
     min-height: 100%;
@@ -663,9 +660,6 @@ video {
 }
 .flex-wrap {
     flex-wrap: wrap;
-}
-.items-end {
-    align-items: flex-end;
 }
 .items-center {
     align-items: center;
@@ -789,6 +783,9 @@ video {
 .pb-6 {
     padding-bottom: 1.5rem;
 }
+.pt-1 {
+    padding-top: 0.25rem;
+}
 .text-left {
     text-align: left;
 }
@@ -855,6 +852,11 @@ video {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
 }
@@ -957,6 +959,22 @@ textarea:focus::placeholder {
 .hover\:bg-gray-500:hover {
     --tw-bg-opacity: 1;
     background-color: rgb(107 114 128 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-gray-700:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(49 51 56 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-gray-600:hover {
+    --tw-bg-opacity: 1;
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity));
+}
+
+.hover\:transition-colors:hover {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 }
 
 .focus\:outline-none:focus {
