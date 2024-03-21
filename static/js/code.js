@@ -1,8 +1,10 @@
+
 function get_url_extension(url) {
     return url.split(/[#?]/)[0].split('.').pop().trim();
 }
 
-document.getElementById("codeZone").classList.add(get_url_extension(document.URL))
+let codeZone = document.getElementById("codeZone")
+if (codeZone){ codeZone.classList.add(get_url_extension(document.URL)) }
 
 
 const rawButton = document.getElementById("menu-raw")
@@ -147,4 +149,9 @@ function showSocialMedia() {
 }
 showSocialMedia()
 
-hljs.highlightAll()
+
+document.addEventListener('readystatechange',  event => {
+    if (event.target.readyState === "complete") {
+        hljs.highlightAll()
+    }
+})
