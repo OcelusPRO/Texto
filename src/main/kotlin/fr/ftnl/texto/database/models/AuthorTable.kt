@@ -29,6 +29,10 @@ class Author(id: EntityID<Int>): BaseIntEntity(id, AuthorTable) {
             find { AuthorTable.apiKey eq key }.firstOrNull()
         }
 
+        fun getById(id: Int) = transaction {
+            find { AuthorTable.id eq id }.firstOrNull()
+        }
+
         fun create(email: String, name: String, avatar: String?) = transaction {
             new {
                 _email = hashSha3512(email)

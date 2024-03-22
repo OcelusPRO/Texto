@@ -3,6 +3,7 @@ package fr.ftnl.texto.plugins.routing
 import fr.ftnl.texto.plugins.UserSession
 import fr.ftnl.texto.plugins.routing.authRoutes.login
 import fr.ftnl.texto.plugins.routing.authRoutes.register
+import fr.ftnl.texto.plugins.routing.authors.author
 import fr.ftnl.texto.plugins.routing.pages.getPage
 import fr.ftnl.texto.plugins.routing.pages.postPage
 import io.ktor.http.*
@@ -67,6 +68,7 @@ fun Application.configureRouting() {
     routing {
         route("/login") { login() }
         route("/register") { register() }
+        route("/author") { author() }
         getPage()
         postPage()
 

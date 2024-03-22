@@ -150,6 +150,55 @@ function showSocialMedia() {
 showSocialMedia()
 
 
+const textoList = document.getElementById('textos-list')
+if (textoList){
+    let data = JSON.parse(textoList.dataset.textos)
+    if (!data) data = []
+    showTextos(data)
+
+    function filterData(filter) {
+        return data.filter((e) =>  (e.title.includes(filter) || e.description.includes(filter)))
+    }
+
+    function showTextos(data) {
+        const textoPost = `
+                    <div class="w-full lg:w-1/2 p-2 flex-auto">
+                        <a href="{0}">
+                            <div class="bg-gray-800 rounded-lg w-full flex flex-col p-2 hover:bg-gray-600 hover:transition-colors">
+                                <div class="flex-1 flex flex-row justify-between">
+                                    <span class="text-3xl font-extrabold">{1}</span>
+
+                                    <div class="text-gray-500 flex flex-col justify-start font-extrabold text-center">
+                                        <span>{2}</span>
+                                        <span>vues</span>
+                                    </div>
+                                </div>
+                                <span class="text-gray-500 pr-2 overflow-hidden line-clamp-3">{3}</span>
+                            </div>
+                        </a>
+                    </div>
+`
+        let content = ''
+        data.forEach(element => {
+            content += textoPost
+                .replace('{0}', '/' + element.code)
+                .replace('{1}', element.title)
+                .replace('{2}', element.views)
+                .replace('{3}', element.description)
+        })
+
+        textoList.innerHTML = content
+    }
+
+    const searchBar = document.getElementById('search')
+
+    searchBar.addEventListener('keyup', () => { showTextos(filterData(searchBar.value)) })
+    searchBar.addEventListener('paste', () => { showTextos(filterData(searchBar.value)) })
+    searchBar.addEventListener('cut', () => { showTextos(filterData(searchBar.value)) })
+}
+
+
+
 document.addEventListener('readystatechange',  event => {
     if (event.target.readyState === "complete") {
         hljs.highlightAll()
