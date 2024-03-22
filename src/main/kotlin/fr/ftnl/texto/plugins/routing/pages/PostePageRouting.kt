@@ -65,7 +65,7 @@ fun Route.postPage(){
                         author,
                         postData.public,
                         call.application.environment.config,
-                        postData.expire?.let { DateTime(it) }
+                        if (postData.expire != null) DateTime(postData.expire) else null
                     )
                     val baseUrl = call.application.environment.config.property("texto.baseUrl").getString()
                     call.respond(HttpStatusCode.OK, "$baseUrl/$key")

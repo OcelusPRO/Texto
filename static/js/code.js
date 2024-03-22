@@ -78,7 +78,7 @@ if (saveButton) {
     const title = document.getElementById("title")
     const description = document.getElementById("description")
     const publicCheck = document.getElementById("toggleTwo")
-    const expire = document.getElementById("expiration").value
+    const expire = document.getElementById("expiration")
     saveButton.addEventListener("click", () => {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
@@ -92,12 +92,11 @@ if (saveButton) {
             "title": title.value,
             "description": description.value,
             "public": publicCheck.checked,
-            "expire": expire !== 0 ? Date.now() + (expire*1000) : null
+            "expire": expire.value != 0 ? (Date.now() + (expire.value*1000)) : null
         });
         const requestOptions = {method: "POST", headers: myHeaders, body: raw, redirect: "follow"};
         const protocol = window.location.protocol
         const host = window.location.host
-        console.log(requestOptions)
         fetch(`${protocol}//${host}/new-texto/user`, requestOptions)
             .then((response) => response.text())
             .then((result) => window.location.href = result)
@@ -108,7 +107,7 @@ if (saveButton) {
 const deleteButton = document.getElementById("menu-delete")
 if (deleteButton) {
     deleteButton.addEventListener("click", () => {
-        window.location.replace(`${window.location.href}/delete`);
+        window.location.replace(`/delete${window.location.pathname}`);
     })
 }
 
@@ -122,7 +121,7 @@ function showNumList(size) {
     }
     numberList.innerHTML = result
 }
-showNumList(code.innerText.split('\n').length)
+if (code){ showNumList(code.innerText.split('\n').length) }
 
 const socialMedia = document.getElementById("socialMedia")
 const mediaDiv = `
