@@ -89,13 +89,13 @@ fun Route.getPage(){
     }
 
     authenticate("auth-session") {
-        get("/{texto_id}/delete"){
-            val textoId = call.parameters["texto_id"]?.md5() ?: return@get call.respond(HttpStatusCode.NotFound)
+        get("/delete/{texto_id}"){
+            val textoId = call.parameters["texto_id"] ?: return@get call.respond(HttpStatusCode.NotFound)
             val texto = Texto.get(textoId) ?: return@get call.respond(HttpStatusCode.NotFound)
             val author = call.sessions.get<UserSession>()?.connectedEmailHash?.let { Author.getByEmailHash(it) }?.id
             if (author != texto.author.id) return@get call.respond(HttpStatusCode.Unauthorized)
 
-            call.respondRedirect("/author/${texto.author.name.clean}")
+            call.respondRedirect("/author/${texto.author.id}")
             texto.deleteOnTransaction()
             getPageInfo(textoId, false)
         }
