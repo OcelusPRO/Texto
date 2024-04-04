@@ -156,7 +156,8 @@ if (textoList){
     showTextos(data)
 
     function filterData(filter) {
-        return data.filter((e) =>  (e.title.includes(filter) || e.description.includes(filter)))
+        const f = filter.toLowerCase()
+        return data.filter((e) =>  (e.title.toLowerCase().includes(f) || e.description.toLowerCase().includes(f)))
     }
 
     function showTextos(data) {
