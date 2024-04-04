@@ -66,7 +66,7 @@ fun Route.twitchLoginRoute() {
             )
             call.sessions.set(session)
             println(user.apiKey)
-            call.respondRedirect("/authors/${user.id}")
+            call.respondRedirect("/author/${user.id}")
 
         }
     }
