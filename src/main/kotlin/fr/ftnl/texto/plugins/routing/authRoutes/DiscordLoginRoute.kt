@@ -78,7 +78,7 @@ fun Route.discordLoginRoute() {
             )
             call.sessions.set(session)
             println(user.apiKey)
-            call.respondRedirect("/")
+            call.respondRedirect("/authors/${user.id}")
         }
     }
 }
