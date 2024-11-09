@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEXTO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./static/css/main.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-dark-text min-h-screen flex flex-col">
+<header class="bg-white dark:bg-gray-800 shadow-md p-4">
+    <div class="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+        <h1 class="text-3xl font-bold italic">TEXTO</h1>
+        <div class="flex items-center space-x-4">
+            <a href="https://github.com/yourusername/codeshare" target="_blank" class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                <i class="fab fa-github text-2xl"></i>
+            </a>
+            <button id="loginBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded text-sm md:text-base" title="Se connecter">
+                <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+            </button>
+
+            <button id="userBtn" class="flex flex-row gap-2 items-center rounded-full hover:bg-slate-700 pr-4 transition-colors">
+                <img src="{{loggedUser.avatar}}" alt="{{loggedUser.username}} avatar" class="rounded-full h-10 w-10 aspect-square object-center">
+                <span class="hidden md:block font-bold">{{loggedUser.username}}</span>
+            </button>
+
+            <button id="themeToggle" data-theme-toggle class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200" title="Changer de thème">
+                <i class="fas fa-sun text-2xl"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="flex-grow flex flex-col md:flex-row">
+    <main class="flex-grow p-4 w-full">
+        <div class="container mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="postTitle" class="text-2xl font-semibold">{{texto.title}}</h2>
+                <span id="viewCount" class="text-sm text-gray-600 dark:text-gray-400"><i class="fas fa-eye mr-2"></i>{{texto.views}}</span>
+            </div>
+
+            <div class="flex flex-row flex-wrap pb-4 gap-2">
+                {{#texto.tags}}
+                    <a href="{{link}}" class="rounded-full bg-slate-700 flex flex-row flex-nowrap pl-1 pr-2 pt-1 pb-1 items-center justify-start gap-2">
+                        <div class="rounded-full h-4 w-4" style="background-color: {{color}}"></div>
+                        <span>{{name}}</span>
+                    </a>
+                {{/texto.tags}}
+            </div>
+
+            <p id="postDescription" class="text-gray-600 dark:text-gray-400 mb-4">{{texto.description}}</p>
+            <div class="mb-4 flex flex-wrap gap-2">
+                <button id="copyBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 md:py-2 md:px-4 rounded text-sm md:text-base tooltip" title="Copier le texto">
+                    <i class="far fa-copy"></i>
+                </button>
+                <button id="rawBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 md:py-2 md:px-4 rounded text-sm md:text-base tooltip" title="Voir le texto brut">
+                    <i class="fas fa-file-alt"></i>
+                </button>
+                <button id="duplicateBtn" class="py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold md:py-2 md:px-4 rounded text-sm md:text-base tooltip" title="Dupliquer le texto">
+                    <i class="far fa-clone"></i>
+                </button>
+                <button id="editBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded tooltip" title="Éditer le texto">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button id="deleteBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded tooltip" title="Supprimer le texto">
+                    <i class="far fa-trash-alt"></i>
+                </button>
+
+                <label class="inline-flex items-center cursor-pointer">
+                    <input type="checkbox" value="" id="highlightToggle" class="sr-only peer" checked>
+                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Affichage code</span>
+                </label>
+            </div>
+            <pre id="codeZone" class="bg-gray-100 dark:bg-gray-800 rounded-md max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-200 dark:scrollbar-track-gray-700">
+                <code id="codeBlock" class="hljs">{{texto.content}}</code>
+            </pre>
+        </div>
+    </main>
+
+    <aside id="profileCard" class="w-full md:w-80 bg-white dark:bg-gray-800 shadow-lg p-6 transition-all duration-300 ease-in-out">
+        <div class="flex items-center mb-4">
+            <img id="profileImage" src="https://via.placeholder.com/64" alt="Profile" class="w-16 h-16 rounded-full mr-4">
+            <div>
+                <h3 id="userName" class="text-xl font-semibold">{{texto.author.unsername}}</h3>
+                <p id="userStats" class="text-sm text-gray-600 dark:text-gray-400">
+                    <i class="far fa-file-alt mr-2"></i>{{texto.author.textos_count}}
+                    <i class="fas fa-eye ml-2 mr-2"></i>{{texto.author.views_count}}
+                </p>
+            </div>
+        </div>
+        <div id="socialLinks" class="flex justify-center space-x-4 mb-4">
+            <a href="#" class="text-gray-800 dark:text-gray-200 hover:text-black dark:hover:text-white"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-gray-800 dark:text-gray-200 hover:text-black dark:hover:text-white"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="text-gray-800 dark:text-gray-200 hover:text-black dark:hover:text-white"><i class="fab fa-github"></i></a>
+        </div>
+    </aside>
+</div>
+
+<script src="./static/js/index.js"></script>
+</body>
+</html>

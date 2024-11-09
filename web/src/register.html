@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte - Texto</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./static/css/main.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-dark-text min-h-screen flex flex-col">
+<header class="bg-white dark:bg-gray-800 shadow-md p-4">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold italic">TEXTO</h1>
+        <button id="themeToggle" data-theme-toggle class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+            <i class="fas fa-sun text-2xl"></i>
+        </button>
+    </div>
+</header>
+
+<main class="flex-grow flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 max-w-md w-full">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Créer un compte</h2>
+        <form>
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mot de passe</label>
+                <input type="password" id="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-4">
+                Créer un compte
+            </button>
+            <div class="flex justify-between space-x-4">
+                <button type="button" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">
+                    <i class="fab fa-twitch mr-2"></i> Twitch
+                </button>
+                <button type="button" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded">
+                    <i class="fab fa-discord mr-2"></i> Discord
+                </button>
+            </div>
+        </form>
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Déjà un compte ? <a href="login.html" class="text-blue-500 hover:text-blue-600">Se connecter</a></p>
+        </div>
+    </div>
+</main>
+
+<script src="./static/js/theme.js"></script>
+</body>
+</html>
