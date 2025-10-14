@@ -1,19 +1,36 @@
 package fr.ftnl.texto.ext
 
-import java.security.MessageDigest
+import kotlinx.serialization.Serializable
+import java.security.SecureRandom
+import java.security.spec.KeySpec
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 
-fun String.Companion.keyGen(length: Int): String {
-    val keySpace = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    val sb = StringBuilder()
-    for (i in 0 until length) sb.append(keySpace.random())
-    return sb.toString()
+@Serializable
+data class HashSalt(val hash: String, val salt: String)
+
+fun String.secureHash(saltString: String? = null): HashSalt {
+    val salt = if (saltString == null) {
+        val random = SecureRandom()
+        val newSalt = ByteArray(16)
+        random.nextBytes(newSalt)
+        newSalt
+    } else saltString.hexToByteArray()
+
+    val spec: KeySpec = PBEKeySpec(this.toCharArray(), salt, 65536, 128)
+    val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+    
+    val hash = factory.generateSecret(spec).encoded.toHexString()
+    return HashSalt(hash, salt.toHexString())
 }
 
-@OptIn(ExperimentalStdlibApi::class)
-fun String.md5(): String {
-    val md = MessageDigest.getInstance("MD5")
-    val digest = md.digest(this.toByteArray())
-    return digest.toHexString()
+fun String.hexToByteArray(): ByteArray {
+    val len = this.length
+    val data = ByteArray(len / 2)
+    var i = 0
+    while (i < len) {
+        data[i / 2] = ((this[i].digitToInt(16) shl 4) + this[i + 1].digitToInt(16)).toByte()
+        i += 2
+    }
+    return data
 }
-
-fun String.checkHash(hash: String) = hash == this.md5()

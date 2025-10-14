@@ -1,0 +1,93 @@
+[versions]
+kotlin = "2.2.20"
+shadow = "9.2.2"
+
+ksp = "2.2.10-2.0.2"
+ktor = "3.3.0"
+logback = "1.5.19"
+slf4j = "2.0.17"
+exposed = "1.0.0-rc-2"
+postgresql-r2dbc-version = "1.0.7.RELEASE"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+[libraries]
+ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+logback-core = { group = "ch.qos.logback", name = "logback-core", version.ref = "logback" }
+
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-r2dbc = { group = "org.jetbrains.exposed", name = "exposed-r2dbc", version.ref = "exposed" }
+exposed-migration-core = {group = "org.jetbrains.exposed", name = "exposed-migration-core", version.ref = "exposed" }
+exposed-migration-jdbc = { group = "org.jetbrains.exposed", name = "exposed-migration-jdbc", version.ref = "exposed" }
+exposed-crypt = { group = "org.jetbrains.exposed", name = "exposed-crypt", version.ref = "exposed" }
+exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "exposed" }
+exposed-kotlin-datetime = { group = "org.jetbrains.exposed", name = "exposed-kotlin-datetime", version.ref = "exposed" }
+
+postgresql-r2dbc = { group = "org.postgresql", name = "r2dbc-postgresql", version.ref = "postgresql-r2dbc-version" }
+
+
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
+ktor-server-sessions = { group = "io.ktor", name = "ktor-server-sessions", version.ref = "ktor" }
+ktor-server-double-receive = { group = "io.ktor", name = "ktor-server-double-receive", version.ref = "ktor" }
+ktor-server-resources = { group = "io.ktor", name = "ktor-server-resources", version.ref = "ktor" }
+ktor-server-status-pages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-mustache = { group = "io.ktor", name = "ktor-server-mustache", version.ref = "ktor" }
+
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+
+[bundles]
+ktor-server = [
+    "ktor-server-core",
+    "ktor-server-auth",
+    "ktor-server-sessions",
+    "ktor-server-double-receive",
+    "ktor-server-resources",
+    "ktor-server-status-pages",
+    "ktor-server-content-negotiation",
+    "ktor-server-mustache",
+    "ktor-server-netty"
+]
+ktor-client = [
+    "ktor-client-cio",
+    "ktor-client-core",
+    "ktor-client-content-negotiation",
+    "ktor-client-logging"
+]
+ktor-mutuals = [
+    "ktor-serialization-kotlinx-json"
+]
+logging = [
+    "slf4j",
+    "logback-classic",
+    "logback-core"
+]
+database = [
+    "exposed-core",
+    "exposed-r2dbc",
+    "exposed-dao",
+
+    "exposed-migration-core",
+    "exposed-migration-jdbc",
+    "exposed-crypt",
+    "exposed-json",
+    "exposed-kotlin-datetime",
+
+    "postgresql-r2dbc",
+]
