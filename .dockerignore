@@ -1,0 +1,9 @@
+.git
+.gradle
+.kotlin
+.idea
+.claude
+build
+web/node_modules
+web/dist
+*.iml

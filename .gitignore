@@ -34,3 +34,15 @@ out/
 
 ### VS Code ###
 .vscode/
+### Texto v2 ###
+web/node_modules/
+web/dist/
+.claude/
+factorio-assets/*
+!factorio-assets/.gitkeep
+backups/
+
+### Secrets ###
+.env
+!.env.example
+web/tsconfig.tsbuildinfo

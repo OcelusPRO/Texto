@@ -1,93 +1,68 @@
 [versions]
-kotlin = "2.2.20"
-shadow = "9.2.2"
-
-ksp = "2.2.10-2.0.2"
-ktor = "3.3.0"
-logback = "1.5.19"
-slf4j = "2.0.17"
-exposed = "1.0.0-rc-2"
-postgresql-r2dbc-version = "1.0.7.RELEASE"
+kotlin = "2.4.21"
+shadow = "9.6.1"
+ktor = "3.6.1"
+exposed = "1.6.1"
+postgresql = "42.7.14"
+hikari = "7.1.0"
+flyway = "13.12.1"
+logback = "1.6.6"
+bouncycastle = "1.86"
+junit = "6.1.3"
+testcontainers = "2.0.5"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 [libraries]
-ksp-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
-slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
-logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
-logback-core = { group = "ch.qos.logback", name = "logback-core", version.ref = "logback" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-sessions = { module = "io.ktor:ktor-server-sessions", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
+ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers", version.ref = "ktor" }
+ktor-server-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response", version.ref = "ktor" }
+ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
-exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
-exposed-r2dbc = { group = "org.jetbrains.exposed", name = "exposed-r2dbc", version.ref = "exposed" }
-exposed-migration-core = {group = "org.jetbrains.exposed", name = "exposed-migration-core", version.ref = "exposed" }
-exposed-migration-jdbc = { group = "org.jetbrains.exposed", name = "exposed-migration-jdbc", version.ref = "exposed" }
-exposed-crypt = { group = "org.jetbrains.exposed", name = "exposed-crypt", version.ref = "exposed" }
-exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "exposed" }
-exposed-kotlin-datetime = { group = "org.jetbrains.exposed", name = "exposed-kotlin-datetime", version.ref = "exposed" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 
-postgresql-r2dbc = { group = "org.postgresql", name = "r2dbc-postgresql", version.ref = "postgresql-r2dbc-version" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 
-
-ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
-ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
-ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
-ktor-server-sessions = { group = "io.ktor", name = "ktor-server-sessions", version.ref = "ktor" }
-ktor-server-double-receive = { group = "io.ktor", name = "ktor-server-double-receive", version.ref = "ktor" }
-ktor-server-resources = { group = "io.ktor", name = "ktor-server-resources", version.ref = "ktor" }
-ktor-server-status-pages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
-ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
-ktor-server-mustache = { group = "io.ktor", name = "ktor-server-mustache", version.ref = "ktor" }
-
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-
-ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 
 [bundles]
 ktor-server = [
-    "ktor-server-core",
-    "ktor-server-auth",
-    "ktor-server-sessions",
-    "ktor-server-double-receive",
-    "ktor-server-resources",
-    "ktor-server-status-pages",
-    "ktor-server-content-negotiation",
-    "ktor-server-mustache",
-    "ktor-server-netty"
+    "ktor-server-core", "ktor-server-netty", "ktor-server-auth", "ktor-server-sessions",
+    "ktor-server-status-pages", "ktor-server-content-negotiation", "ktor-server-rate-limit",
+    "ktor-server-compression", "ktor-server-call-logging", "ktor-server-forwarded-header",
+    "ktor-server-default-headers", "ktor-server-swagger", "ktor-server-auto-head-response",
 ]
-ktor-client = [
-    "ktor-client-cio",
-    "ktor-client-core",
-    "ktor-client-content-negotiation",
-    "ktor-client-logging"
-]
-ktor-mutuals = [
-    "ktor-serialization-kotlinx-json"
-]
-logging = [
-    "slf4j",
-    "logback-classic",
-    "logback-core"
-]
+ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation"]
 database = [
-    "exposed-core",
-    "exposed-r2dbc",
-    "exposed-dao",
-
-    "exposed-migration-core",
-    "exposed-migration-jdbc",
-    "exposed-crypt",
-    "exposed-json",
-    "exposed-kotlin-datetime",
-
-    "postgresql-r2dbc",
+    "exposed-core", "exposed-jdbc", "exposed-json", "exposed-java-time",
+    "postgresql", "hikari", "flyway-core", "flyway-postgresql",
 ]
