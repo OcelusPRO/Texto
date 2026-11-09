@@ -1,0 +1,57 @@
+--- a/packages/website/src/index.ts	2026-11-09 14:40:16.551136200 +0100
++++ b/packages/website/src/index.ts	2026-11-09 15:36:58.486715600 +0100
+@@ -254,11 +254,53 @@
+         })
+ }
+ 
++/*
++    Texto embedding bridge.
++
++    When FBE runs inside an iframe of a Texto instance, the page is opened with
++    `?embedder=<origin of the Texto page>`. Every export (Ctrl+C) is then also
++    posted to that origin - and only to it - so Texto can offer to save the
++    edited blueprint. Texto may ask for a blueprint to be (re)loaded with a
++    `{ type: 'fbe:load', blueprint }` message from the same origin.
++*/
++const EMBEDDER_ORIGIN = ((): string | undefined => {
++    try {
++        const raw = new URLSearchParams(window.location.search).get('embedder')
++        return raw && window.parent !== window ? new URL(raw).origin : undefined
++    } catch {
++        return undefined
++    }
++})()
++
++function notifyEmbedder(blueprint: string): void {
++    if (EMBEDDER_ORIGIN) window.parent.postMessage({ type: 'fbe:export', blueprint }, EMBEDDER_ORIGIN)
++}
++
++window.addEventListener('message', (e: MessageEvent) => {
++    if (!EMBEDDER_ORIGIN || e.origin !== EMBEDDER_ORIGIN) return
++    const data = e.data as { type?: unknown; blueprint?: unknown; id?: unknown; resolution?: unknown } | null
++    if (data?.type === 'fbe:load' && typeof data.blueprint === 'string' && startupFinished) {
++        void importReplace(data.blueprint)
++    }
++    // Texto asks for a rendering of the loaded blueprint (used for link previews).
++    if (data?.type === 'fbe:picture' && startupFinished && !bp.isEmpty()) {
++        const id = data.id
++        const resolution = typeof data.resolution === 'number' && data.resolution > 0 ? data.resolution : undefined
++        editor
++            .getPicture(resolution)
++            .then(blob => window.parent.postMessage({ type: 'fbe:picture', id, blob }, EMBEDDER_ORIGIN))
++            .catch(() => window.parent.postMessage({ type: 'fbe:picture', id, error: true }, EMBEDDER_ORIGIN))
++    }
++})
++
+ function exportString(): boolean {
+     if (bp.isEmpty()) return false
+ 
+     encode(book || bp)
+-        .then(s => navigator.clipboard.writeText(s))
++        .then(s => {
++            notifyEmbedder(s)
++            return navigator.clipboard.writeText(s)
++        })
+         .then(() => createToast({ text: 'Blueprint string copied to clipboard', type: 'success' }))
+         .catch(error => createErrorMessage('Blueprint string could not be generated.', error))
+     return true
