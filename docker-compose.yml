@@ -1,47 +1,73 @@
-version: "3.8"
+# Texto v2 — migration depuis la v1 (déploiement Dokploy).
+# Les secrets sont dans .env (non versionné, voir .env.example).
+#
+# Reprend la base et le volume de la v1 tels quels : au premier démarrage, Texto importe les
+# tables TBL_* et les fichiers de texto_data, puis renomme les anciennes tables en legacy_*.
 volumes:
-  texto_database:
+  texto_db_data:
   texto_data:
 
+networks:
+  dokploy-network:
+    external: true
+
 services:
+  texto_db:
+    container_name: texto_db
+    # Même version majeure que la v1 : le volume texto_db_data est réutilisé tel quel.
+    image: postgres:16.4-bullseye
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - texto_db_data:/var/lib/postgresql/data
+
   texto_website:
     container_name: texto_website
     image: harbor.ftnl.link/texto/app:latest
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.texto.rule=Host(`example.com`)"
-      - "traefik.http.routers.texto.entrypoints=websecure"
-      - "traefik.http.routers.texto.service=textolb"
-      - "traefik.http.routers.texto.tls.certresolver=production"
-      - "traefik.http.services.textolb.loadbalancer.server.port=8080"
+    pull_policy: always
+    depends_on:
+      texto_db:
+        condition: service_healthy
+    networks:
+      - dokploy-network
     volumes:
+      # Contenu des posts de la v1, lu une seule fois à l'import.
       - texto_data:/app/pages
-      - texto_database:/app/database
     environment:
-      TEXTO_BASE_URL: "https://example.com"
-      DISCORD_CLIENT_ID: "CLIENT_ID"
-      DISCORD_CLIENT_SECRET: "CLIENT_SECRET"
+      TEXTO_BASE_URL: ${TEXTO_BASE_URL}
+      # La v1 n'indiquait pas de nom de base : elle utilisait « postgres ».
+      DB_HOST: "texto_db:5432"
+      DB_NAME: "postgres"
+      DB_USER: "postgres"
+      DB_PASS: ${DB_PASS}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_ENCRYPT: ${SESSION_ENCRYPT}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET}
+      ALLOW_NEW_USER: ${ALLOW_NEW_USER:-false}
+      TEXTO_ADMINS: ${TEXTO_ADMINS:-}
+      TEXTO_FBE_URL: ${TEXTO_FBE_URL:-}
 
-  traefik:
-    image: "traefik:v2.2"
-    container_name: "traefik"
-    restart: "always"
-    command:
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--providers.docker"
-      - "--providers.docker.exposedByDefault=false"
-      - "--certificatesresolvers.default.acme.email=${EMAIL_ADDRESS}"
-      - "--certificatesresolvers.default.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.default.acme.tlschallenge=true"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./traefik-data:/etc/traefik"
-    labels:
-      - "traefik.enable=true"
+  # Factorio Blueprint Editor patché pour l'intégration en iframe (voir fbe/).
+  # Lui attribuer un domaine dans Dokploy, puis renseigner TEXTO_FBE_URL dans .env.
+  texto_fbe:
+    container_name: texto_fbe
+    pull_policy: always
+    image: harbor.ftnl.link/texto/fbe:latest
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    environment:
+      # Seul Texto peut afficher FBE en iframe.
+      FBE_FRAME_ANCESTORS: ${TEXTO_BASE_URL}

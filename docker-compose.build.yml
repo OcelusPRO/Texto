@@ -1,0 +1,10 @@
+# Construction locale des images (le docker-compose.yml de déploiement n'utilise que des images du registry,
+# Dokploy ne recevant pas le dépôt). Construire et pousser :
+#
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml build
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml push texto_website texto_fbe
+services:
+  texto_website:
+    build: .
+  texto_fbe:
+    build: ./fbe
