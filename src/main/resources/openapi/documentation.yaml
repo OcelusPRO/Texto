@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: Texto API
+  version: 2.0.0
+  description: |
+    Authentification : en-tête `Authorization: Bearer txt_…` (token créé dans les paramètres).
+    Les anciennes clés API de la v1 restent acceptées via `X-API-Key`.
+    Scopes : `posts:read`, `posts:write`.
+servers:
+  - url: /
+security:
+  - bearer: []
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+    legacyKey: { type: apiKey, in: header, name: X-API-Key }
+  parameters:
+    key: { name: key, in: path, required: true, schema: { type: string } }
+  schemas:
+    Tag:
+      type: object
+      properties: { id: { type: integer }, name: { type: string }, color: { type: string }, postCount: { type: integer } }
+    Folder:
+      type: object
+      properties: { id: { type: integer }, parentId: { type: integer, nullable: true }, name: { type: string }, postCount: { type: integer } }
+    PostInput:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        kind: { type: string, enum: [code, text, markdown, factorio] }
+        language: { type: string, description: "Nom CodeMirror (Kotlin, Python…)" }
+        content: { type: string }
+        visibility: { type: string, enum: [public, unlisted, private] }
+        password: { type: string, description: "\"\" retire le mot de passe" }
+        burnAfterViews: { type: integer, description: "0 désactive" }
+        expiresIn: { type: integer, description: "secondes ; 0 = jamais" }
+        folderId: { type: integer }
+        clearFolder: { type: boolean }
+        tags: { type: array, items: { type: string } }
+    PostSummary:
+      type: object
+      properties:
+        key: { type: string }
+        title: { type: string }
+        description: { type: string }
+        kind: { type: string }
+        language: { type: string, nullable: true }
+        visibility: { type: string }
+        views: { type: integer }
+        revision: { type: integer }
+        tags: { type: array, items: { $ref: "#/components/schemas/Tag" } }
+        folderId: { type: integer, nullable: true }
+        hasPassword: { type: boolean }
+        burnAfterViews: { type: integer, nullable: true }
+        size: { type: integer }
+        createdAt: { type: integer, format: int64 }
+        updatedAt: { type: integer, format: int64 }
+        expiresAt: { type: integer, format: int64, nullable: true }
+    Post:
+      type: object
+      properties:
+        summary: { $ref: "#/components/schemas/PostSummary" }
+        content: { type: string }
+        author: { type: object, properties: { handle: { type: string }, displayName: { type: string } } }
+        isOwner: { type: boolean }
+        burned: { type: boolean }
+    PostPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/PostSummary" } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    Error:
+      type: object
+      properties: { error: { type: string }, message: { type: string } }
+paths:
+  /api/posts:
+    post:
+      summary: Créer un post
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PostInput" } } } }
+      responses:
+        "201": { description: Créé, content: { application/json: { schema: { $ref: "#/components/schemas/PostSummary" } } } }
+        "429": { description: Limite de débit atteinte }
+  /api/posts/{key}:
+    parameters: [{ $ref: "#/components/parameters/key" }]
+    get:
+      summary: Lire un post
+      security: [{}, { bearer: [] }]
+      parameters:
+        - { name: X-Post-Password, in: header, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Post" } } } }
+        "401": { description: "password_required / wrong_password", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "404": { description: Introuvable ou expiré }
+    patch:
+      summary: Modifier un post (crée une révision si le contenu change)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PostInput" } } } }
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PostSummary" } } } } }
+    delete:
+      summary: Supprimer un post
+      responses: { "204": { description: Supprimé } }
+  /api/posts/{key}/revisions:
+    parameters: [{ $ref: "#/components/parameters/key" }]
+    get: { summary: Liste des révisions (auteur uniquement), responses: { "200": { description: OK } } }
+  /api/posts/{key}/revisions/{n}:
+    parameters: [{ $ref: "#/components/parameters/key" }, { name: n, in: path, required: true, schema: { type: integer } }]
+    get: { summary: Contenu d'une révision, responses: { "200": { description: OK } } }
+  /api/posts/{key}/revisions/{n}/restore:
+    parameters: [{ $ref: "#/components/parameters/key" }, { name: n, in: path, required: true, schema: { type: integer } }]
+    post: { summary: Restaurer une révision, responses: { "200": { description: OK } } }
+  /api/me/posts:
+    get:
+      summary: Mes posts (recherche plein texte et filtres)
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: tag, in: query, schema: { type: array, items: { type: string } }, description: "tous les tags doivent correspondre" }
+        - { name: folder, in: query, schema: { type: string }, description: "id du dossier ou `none`" }
+        - { name: recursive, in: query, schema: { type: string, enum: ["1"] } }
+        - { name: kind, in: query, schema: { type: string } }
+        - { name: lang, in: query, schema: { type: string } }
+        - { name: visibility, in: query, schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [updated, created, title, views] } }
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: pageSize, in: query, schema: { type: integer, maximum: 100 } }
+      responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PostPage" } } } } }
+  /api/me/folders:
+    get: { summary: Mes dossiers, responses: { "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Folder" } } } } } } }
+    post:
+      summary: Créer un dossier
+      requestBody: { content: { application/json: { schema: { type: object, properties: { name: { type: string }, parentId: { type: integer } } } } } }
+      responses: { "201": { description: Créé } }
+  /api/me/folders/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    patch:
+      summary: Renommer / déplacer un dossier
+      requestBody: { content: { application/json: { schema: { type: object, properties: { name: { type: string }, parentId: { type: integer }, moveToRoot: { type: boolean } } } } } }
+      responses: { "200": { description: OK } }
+    delete: { summary: Supprimer un dossier (les posts sont conservés), responses: { "204": { description: Supprimé } } }
+  /api/me/tags:
+    get: { summary: Mes tags, responses: { "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Tag" } } } } } } }
+  /api/users/{handle}:
+    parameters: [{ name: handle, in: path, required: true, schema: { type: string } }]
+    get: { summary: Profil public, security: [], responses: { "200": { description: OK } } }
+  /api/users/{handle}/posts:
+    parameters: [{ name: handle, in: path, required: true, schema: { type: string } }]
+    get: { summary: Posts publics d'un utilisateur, security: [], responses: { "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/PostPage" } } } } } }
+  /raw/{key}:
+    parameters: [{ $ref: "#/components/parameters/key" }]
+    get: { summary: Contenu brut (text/plain), security: [], responses: { "200": { description: OK } } }
+  /new-texto/api:
+    post:
+      summary: "Compatibilité v1 : renvoie l'URL du post en texte"
+      security: [{ legacyKey: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: { content: { type: string }, title: { type: string }, description: { type: string }, public: { type: boolean }, expire: { type: integer, format: int64 } }
+      responses: { "200": { description: URL du post } }
