@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-mono: "JetBrains Mono", "Cascadia Mono", ui-monospace, Consolas, "DejaVu Sans Mono", monospace;
+  --font-sans: var(--font-mono);
+  /* anthracite */
+  --color-zinc-900: #1e1f22;
+  --color-zinc-950: #17181a;
+}
+
+html, body, #root { min-height: 100%; }
+body { font-family: var(--font-mono); font-size: 14px; }
+
+.cm-editor { font-size: 13.5px; }
+.cm-editor .cm-scroller { font-family: var(--font-mono); }
+.cm-editor.cm-focused { outline: none; }
+
+.prose { font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+.prose pre { background: #17181a; color: #d4d4d8; border-radius: 4px; }
+.prose code { font-family: var(--font-mono); }
+.prose pre code .hljs-keyword, .prose pre code .hljs-built_in { color: #cc7832; }
+.prose pre code .hljs-string, .prose pre code .hljs-attr { color: #6a8759; }
+.prose pre code .hljs-number, .prose pre code .hljs-literal { color: #6897bb; }
+.prose pre code .hljs-comment { color: #808080; font-style: italic; }
+.prose pre code .hljs-title, .prose pre code .hljs-function { color: #ffc66d; }
+.prose pre code .hljs-type, .prose pre code .hljs-meta { color: #bbb529; }
+.prose .mermaid { background: transparent; display: flex; justify-content: center; }
