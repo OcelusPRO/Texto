@@ -1,11 +1,12 @@
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronRight, Copy, Folder as FolderIcon, KeyRound, Plus, Search, Trash2, Unlink } from "lucide-react";
+import { Check, ChevronRight, Copy, Fingerprint, Folder as FolderIcon, KeyRound, Pencil, Plus, Search, Trash2, Unlink } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { api, ApiError, type Social } from "../lib/api";
 import { fullDate, relativeTime } from "../lib/format";
 import { loginUrl, useConfig, useMe } from "../lib/session";
+import { isPasskeyCancel, loginWithPasskey, passkeysSupported, registerPasskey } from "../lib/passkey";
 import { EditPostModal } from "../components/EditPostModal";
 import { PostGrid, PostRow, TagTree, folderPath } from "../components/Organize";
 import { SocialEditor, SocialIcon, socialHandle, socialKey, socialLabel, socialsValid } from "../components/Social";
@@ -31,8 +32,22 @@ export function LoginPage() {
   const { data: me } = useMe();
   const [params] = useSearchParams();
   const redirect = params.get("redirect") ?? "/new";
-  const error = params.get("error");
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const error = passkeyError ?? params.get("error");
   if (me) return <Navigate to={redirect} replace />;
+  const passkeyLogin = async () => {
+    setPasskeyError(null); setPasskeyBusy(true);
+    try {
+      await loginWithPasskey();
+      await qc.invalidateQueries({ queryKey: ["me"] });
+      navigate(redirect, { replace: true });
+    } catch (e) {
+      if (!isPasskeyCancel(e)) setPasskeyError(e instanceof ApiError ? e.code : "passkey_failed");
+    } finally { setPasskeyBusy(false); }
+  };
   return (
     <div className="mx-auto mt-24 w-full max-w-xs space-y-3">
       <h1 className="mb-6 text-lg font-bold">{(cfg?.siteName ?? "texto").toLowerCase()}</h1>
@@ -42,6 +57,11 @@ export function LoginPage() {
           <ProviderIcon provider={p} className="size-4" /> {t(`providers.${p}`)}
         </a>
       ))}
+      {passkeysSupported() && (
+        <button type="button" onClick={passkeyLogin} disabled={passkeyBusy} className="flex h-10 w-full items-center gap-3 border border-zinc-300 px-3 text-sm hover:bg-zinc-200 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+          <Fingerprint className="size-4" /> {t("login.passkey")}
+        </button>
+      )}
       {cfg && cfg.providers.length === 0 && <p className="text-sm text-zinc-500">{t("login.noProvider")}</p>}
     </div>
   );
@@ -252,6 +272,17 @@ function SettingsInner() {
   const [tokenScope, setTokenScope] = useState("rw");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const tokens = useQuery({ queryKey: ["tokens"], queryFn: api.tokens });
+  const passkeys = useQuery({ queryKey: ["passkeys"], queryFn: api.passkeys });
+  const [passkeyName, setPasskeyName] = useState("");
+  const [renaming, setRenaming] = useState<{ id: number; name: string } | null>(null);
+  const errorToast = (e: unknown) => toast(e instanceof ApiError ? t(`errors.${e.code}`, { defaultValue: e.code }) : t("errors.passkey_failed"), "error");
+  const addPasskey = async () => {
+    try {
+      await registerPasskey(passkeyName.trim());
+      setPasskeyName(""); passkeys.refetch();
+      toast(t("settings.passkeyAdded"));
+    } catch (e) { if (!isPasskeyCancel(e)) errorToast(e); }
+  };
 
   useEffect(() => {
     document.title = `${t("nav.settings")} · Texto`;
@@ -326,6 +357,28 @@ function SettingsInner() {
         </ul>
       </Section>
 
+      <Section title={t("settings.passkeys")} description={t("settings.passkeysHint")}>
+        {passkeysSupported() ? (
+          <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); addPasskey(); }}>
+            <Input value={passkeyName} onChange={(e) => setPasskeyName(e.target.value)} placeholder={t("settings.passkeyName")} className="w-52 flex-1" maxLength={100} />
+            <Button type="submit" variant="primary"><Fingerprint className="size-4" />{t("settings.addPasskey")}</Button>
+          </form>
+        ) : <p className="text-sm text-zinc-500">{t("settings.passkeysUnsupported")}</p>}
+        <ul className="mt-4 divide-y divide-zinc-100 dark:divide-zinc-800">
+          {passkeys.data?.map((pk) => (
+            <li key={pk.id} className="flex items-center gap-3 py-2 text-sm">
+              <Fingerprint className="size-4 text-zinc-400" />
+              <div className="min-w-0 flex-1">
+                <div className="font-medium">{pk.name}</div>
+                <div className="text-xs text-zinc-500">{t("settings.passkeyCreated", { when: relativeTime(pk.createdAt) })} · {pk.lastUsedAt ? t("settings.lastUsed", { when: relativeTime(pk.lastUsedAt) }) : t("settings.neverUsed")}</div>
+              </div>
+              <Button size="sm" variant="ghost" title={t("settings.rename")} onClick={() => setRenaming({ id: pk.id, name: pk.name })}><Pencil className="size-4" /></Button>
+              <Button size="sm" variant="ghost" title={t("settings.deletePasskey")} onClick={async () => { try { await api.deletePasskey(pk.id); passkeys.refetch(); } catch (e) { errorToast(e); } }}><Trash2 className="size-4 text-red-500" /></Button>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
       <Section title={t("settings.tokens")}>
         <form className="flex flex-wrap gap-2" onSubmit={async (e) => {
           e.preventDefault();
@@ -371,6 +424,15 @@ node texto.mjs fichier.kt --private --expire 1d`}</pre>
           <Input readOnly value={newToken ?? ""} className="font-mono text-xs" onFocus={(e) => e.target.select()} />
           <Button onClick={() => copy(newToken!, t("settings.tokenCopied"))}><Copy className="size-4" /></Button>
         </div>
+      </Modal>
+      <Modal open={renaming != null} onClose={() => setRenaming(null)} title={t("settings.rename")}
+        footer={<>
+          <Button onClick={() => setRenaming(null)}>{t("common.cancel")}</Button>
+          <Button variant="primary" onClick={async () => {
+            try { await api.renamePasskey(renaming!.id, renaming!.name); setRenaming(null); passkeys.refetch(); } catch (e) { errorToast(e); }
+          }}>{t("common.save")}</Button>
+        </>}>
+        <Input value={renaming?.name ?? ""} onChange={(e) => setRenaming((r) => r && { ...r, name: e.target.value })} maxLength={100} autoFocus />
       </Modal>
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title={t("settings.deleteAccount")}
         footer={<>

@@ -270,6 +270,7 @@ class UserService(private val cfg: AppConfig) {
         Folders.update({ Folders.user eq sourceId }) { it[user] = targetId }
         Posts.update({ Posts.user eq sourceId }) { it[user] = targetId }
         ApiTokens.update({ ApiTokens.user eq sourceId }) { it[user] = targetId }
+        Passkeys.update({ Passkeys.user eq sourceId }) { it[user] = targetId }
         SocialLinks.update({ SocialLinks.user eq sourceId }) { it[user] = targetId }
         val srcHandle = Users.selectAll().where { Users.id eq sourceId }.single()[Users.handle]
         HandleAliases.update({ HandleAliases.user eq sourceId }) { it[user] = targetId }

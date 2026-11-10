@@ -58,6 +58,20 @@ object ApiTokens : LongIdTable("t_api_tokens") {
     val expiresAt = timestamp("expires_at").nullable()
 }
 
+/** Passkeys (WebAuthn) : connexion sans mot de passe, configurée depuis les paramètres du compte. */
+object Passkeys : LongIdTable("t_passkeys") {
+    val user = reference("user_id", Users, onDelete = ReferenceOption.CASCADE)
+    val credentialId = binary("credential_id")
+    /** Identifiant WebAuthn de l'utilisateur, enregistré dans l'authentificateur (aléatoire, partagé par les passkeys d'un compte). */
+    val userHandle = binary("user_handle")
+    val publicKeyCose = binary("public_key_cose")
+    val signCount = long("sign_count").default(0)
+    val name = varchar("name", 100)
+    val transports = varchar("transports", 255).default("")
+    val createdAt = timestamp("created_at")
+    val lastUsedAt = timestamp("last_used_at").nullable()
+}
+
 object Folders : LongIdTable("t_folders") {
     val user = reference("user_id", Users, onDelete = ReferenceOption.CASCADE)
     val parent = optReference("parent_id", Folders, onDelete = ReferenceOption.CASCADE)

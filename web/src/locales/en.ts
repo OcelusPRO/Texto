@@ -66,7 +66,7 @@ const en: Messages = {
   notFound: { title: "Not found", text: "This post doesn't exist, expired or was deleted.", home: "Back home" },
   login: {
     title: "Sign in to {{site}}", subtitle: "Use your Discord or Twitch account.", with: "Continue with {{provider}}",
-    noProvider: "No provider configured.",
+    noProvider: "No provider configured.", passkey: "Sign in with a passkey",
     legacyHint: "Had an account on the old version? Sign in with the same Discord or Twitch account: your posts will be attached automatically (otherwise, ask the administrator).",
   },
   providers: { discord: "Discord", twitch: "Twitch" },
@@ -87,6 +87,10 @@ const en: Messages = {
     accounts: "Linked accounts", accountsHint: "Link Discord and Twitch to sign in to the same account with either.",
     linkedAs: "{{name}} · linked {{when}}", notLinked: "Not linked", unlink: "Unlink", link: "Link",
     mergeHint: "If the account you link was already used on its own here, its posts, folders and tags are merged into this account.",
+    passkeys: "Passkeys", passkeysHint: "Sign in without Discord or Twitch, using your fingerprint, face, device PIN or a security key. Add one passkey per device or password manager.",
+    passkeyName: "Name (e.g. phone, YubiKey…)", addPasskey: "Add a passkey", passkeyAdded: "Passkey added",
+    passkeyCreated: "added {{when}}", passkeysUnsupported: "This browser doesn't support passkeys.",
+    rename: "Rename", deletePasskey: "Delete passkey",
     tokens: "API tokens", tokensHint: "For the CLI and REST API: header <code>Authorization: Bearer txt_…</code>. Old API keys still work through <code>X-API-Key</code>.",
     tokenName: "Token name", scopeRw: "Read & write", scopeR: "Read only", createToken: "Create",
     lastUsed: "used {{when}}", neverUsed: "never used", cliTitle: "CLI",
@@ -110,6 +114,8 @@ const en: Messages = {
     mergeHint: "All of {{name}}'s content (posts, folders, tags, tokens) will move to the chosen account, then {{name}} will be deleted.",
   },
   errors: {
+    passkey_expired: "The request expired, try again.", passkey_invalid: "Passkey rejected.", passkey_unknown: "Unknown passkey: add it first from your account settings.",
+    passkey_exists: "This passkey is already registered.", passkey_failed: "The passkey operation failed.", name_required: "Name required.",
     tag_reserved: "This version tag is managed automatically.",
     invalid_provider_id: "Invalid ID: use the numeric ID, not the username.", invalid_provider: "Unknown provider.", already_linked: "This ID is already linked to account @{{handle}}: use \"Merge\".", already_linked_here: "This ID is already linked to this account.",
     impersonating: "Not available while acting as another account.",

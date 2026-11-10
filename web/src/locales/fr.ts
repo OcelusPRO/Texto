@@ -64,7 +64,7 @@ const fr = {
   notFound: { title: "Introuvable", text: "Ce post n'existe pas, a expiré ou a été supprimé.", home: "Retour à l'accueil" },
   login: {
     title: "Connexion à {{site}}", subtitle: "Utilisez votre compte Discord ou Twitch.", with: "Continuer avec {{provider}}",
-    noProvider: "Aucun fournisseur configuré.",
+    noProvider: "Aucun fournisseur configuré.", passkey: "Se connecter avec une passkey",
     legacyHint: "Vous aviez un compte sur l'ancienne version ? Connectez-vous avec le même compte Discord ou Twitch : vos posts seront rattachés automatiquement (sinon, demandez à l'administrateur).",
   },
   providers: { discord: "Discord", twitch: "Twitch" },
@@ -85,6 +85,10 @@ const fr = {
     accounts: "Comptes liés", accountsHint: "Liez Discord et Twitch pour vous connecter avec l'un ou l'autre au même compte.",
     linkedAs: "{{name}} · lié {{when}}", notLinked: "Non lié", unlink: "Délier", link: "Lier",
     mergeHint: "Si le compte que vous liez avait déjà été utilisé seul ici, ses posts, dossiers et tags sont fusionnés dans ce compte.",
+    passkeys: "Passkeys", passkeysHint: "Connectez-vous sans Discord ni Twitch, avec l'empreinte, le visage, le code de l'appareil ou une clé de sécurité. Ajoutez une passkey par appareil ou gestionnaire de mots de passe.",
+    passkeyName: "Nom (ex. : téléphone, YubiKey…)", addPasskey: "Ajouter une passkey", passkeyAdded: "Passkey ajoutée",
+    passkeyCreated: "ajoutée {{when}}", passkeysUnsupported: "Ce navigateur ne prend pas en charge les passkeys.",
+    rename: "Renommer", deletePasskey: "Supprimer la passkey",
     tokens: "Tokens API", tokensHint: "Pour le CLI et l'API REST : en-tête <code>Authorization: Bearer txt_…</code>. Les anciennes clés API restent valides via <code>X-API-Key</code>.",
     tokenName: "Nom du token", scopeRw: "Lecture et écriture", scopeR: "Lecture seule", createToken: "Créer",
     lastUsed: "utilisé {{when}}", neverUsed: "jamais utilisé", cliTitle: "CLI",
@@ -108,6 +112,8 @@ const fr = {
     mergeHint: "Tout le contenu de {{name}} (posts, dossiers, tags, tokens) sera transféré vers le compte choisi, puis {{name}} sera supprimé.",
   },
   errors: {
+    passkey_expired: "La demande a expiré, réessayez.", passkey_invalid: "Passkey refusée.", passkey_unknown: "Passkey inconnue : ajoutez-la d'abord depuis les paramètres de votre compte.",
+    passkey_exists: "Cette passkey est déjà enregistrée.", passkey_failed: "L'opération avec la passkey a échoué.", name_required: "Nom requis.",
     tag_reserved: "Ce tag de version est géré automatiquement.",
     invalid_provider_id: "ID invalide : il faut l'ID numérique, pas le pseudo.", invalid_provider: "Fournisseur inconnu.", already_linked: "Cet ID est déjà lié au compte @{{handle}} : utilisez « Fusionner ».", already_linked_here: "Cet ID est déjà lié à ce compte.",
     impersonating: "Action indisponible en mode « agir en tant que ».",

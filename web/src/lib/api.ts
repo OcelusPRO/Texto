@@ -33,6 +33,8 @@ export interface RevisionSummary { number: number; title: string; size: number; 
 export interface Revision { number: number; title: string; description: string; kind: Kind; language: string | null; content: string; createdAt: number }
 export interface Page<T> { items: T[]; total: number; page: number; pageSize: number }
 export interface Token { id: number; name: string; prefix: string; scopes: string[]; legacy: boolean; createdAt: number; lastUsedAt: number | null; expiresAt: number | null }
+export interface Passkey { id: number; name: string; createdAt: number; lastUsedAt: number | null }
+export interface PasskeyOptions { requestId: string; publicKey: unknown }
 export interface SocialDef {
   key: string; label: string; placeholder: string; embed: boolean; allowHttp: boolean;
   rules: { host: string; pathPrefix: string | null }[];
@@ -119,6 +121,14 @@ export const api = {
   createToken: (name: string, scopes: string[], expiresInDays?: number) =>
     request<{ token: Token; secret: string }>("POST", "/api/me/tokens", { name, scopes, expiresInDays }),
   deleteToken: (id: number) => request<void>("DELETE", `/api/me/tokens/${id}`),
+  passkeys: () => get<Passkey[]>("/api/me/passkeys"),
+  passkeyRegisterOptions: () => request<PasskeyOptions>("POST", "/api/me/passkeys/options"),
+  passkeyRegister: (requestId: string, credential: unknown, name: string) =>
+    request<Passkey>("POST", "/api/me/passkeys", { requestId, credential, name }),
+  renamePasskey: (id: number, name: string) => request<void>("PATCH", `/api/me/passkeys/${id}`, { name }),
+  deletePasskey: (id: number) => request<void>("DELETE", `/api/me/passkeys/${id}`),
+  passkeyLoginOptions: () => request<PasskeyOptions>("POST", "/api/auth/passkey/options"),
+  passkeyLogin: (requestId: string, credential: unknown) => request<void>("POST", "/api/auth/passkey", { requestId, credential }),
 
   post: (key: string, password?: string) =>
     get<Post>(`/api/posts/${encodeURIComponent(key)}`, password ? { "X-Post-Password": password } : {}),

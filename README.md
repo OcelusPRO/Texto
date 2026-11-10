@@ -3,6 +3,7 @@
 Pastebin personnel : code, texte, Markdown (avec Mermaid) et plans Factorio.
 
 - Comptes via Discord et/ou Twitch, liables entre eux (un seul compte).
+- Connexion par passkey (WebAuthn), à ajouter depuis les paramètres du compte.
 - Dossiers imbriqués et tags, propres à chaque utilisateur.
 - Historique des versions avec diff et restauration.
 - Visibilité publique / non listée / privée, mot de passe, brûler après N vues, expiration.
@@ -72,6 +73,10 @@ UPDATE legacy_tbl_author_aut SET user_email_hash = NULL;
   à la racine. Seuls les dossiers qui contiennent au moins un post public (directement ou dans un sous-dossier) sont
   visibles ; les autres et leur nom restent privés. La recherche porte sur tous les dossiers. Le chemin du dossier est dans l'URL (`/u/pseudo/Projets/Usines`) ; les anciens liens `?folder=ID` redirigent.
 - Lier un compte Discord/Twitch qui a déjà son propre compte sur Texto fusionne les deux comptes en un seul.
+- Passkeys : ajoutées depuis Paramètres par un utilisateur déjà connecté (Discord/Twitch), elles permettent ensuite de
+  se connecter sans fournisseur OAuth, sans saisir d'identifiant (passkeys découvrables). Elles sont liées au domaine de
+  `TEXTO_BASE_URL` (HTTPS obligatoire hors `localhost`) : changer de domaine rend les passkeys existantes inutilisables.
+  Les cérémonies en cours sont gardées 5 minutes en mémoire (une seule instance du backend).
 - Liens sociaux : chaque icône n'accepte que ses propres liens (un lien Twitch ne passe pas sur l'icône Discord).
   Les aperçus Discord d'un profil n'affichent que Twitch, YouTube, GitHub et Discord (invitation de serveur).
 - Aperçus Discord d'un post : statistiques (jamais un extrait du contenu) et, pour un plan Factorio vanilla,

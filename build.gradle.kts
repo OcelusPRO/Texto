@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.bundles.database)
     implementation(libs.logback.classic)
     implementation(libs.bouncycastle)
+    implementation(libs.webauthn.server)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
