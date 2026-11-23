@@ -155,7 +155,7 @@ export function ProfilePage() {
               return (
                 <li key={s.url}>
                   <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex max-w-full items-center gap-2 text-zinc-600 hover:text-zinc-900 hover:underline dark:text-zinc-300 dark:hover:text-white">
-                    <SocialIcon name={key} className="size-4 shrink-0" /><span className="truncate" title={socialLabel(key)}>{socialHandle(key, s.url)}</span>
+                    <SocialIcon name={key} className="size-4 shrink-0" /><span className="truncate" title={socialLabel(key)}>{s.label || socialHandle(key, s.url)}</span>
                   </a>
                 </li>
               );

@@ -44,6 +44,8 @@ object SocialLinks : LongIdTable("t_social_links") {
     val icon = varchar("icon", 50)
     val url = varchar("url", 512)
     val position = integer("position").default(0)
+    /** Nom affiché à la place du lien (ex. nom de la chaîne YouTube), renseigné par le serveur. */
+    val label = varchar("label", 100).nullable()
 }
 
 object ApiTokens : LongIdTable("t_api_tokens") {

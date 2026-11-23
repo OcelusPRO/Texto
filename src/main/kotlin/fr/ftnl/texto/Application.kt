@@ -31,6 +31,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
@@ -100,6 +101,13 @@ fun Application.module(cfg: AppConfig) {
         apiRoutes(cfg, users, posts, admin, sync, legacyDates, ModPortal())
         legacyRoutes(cfg, users, posts)
         webRoutes(cfg, posts, users, OgImageRenderer())
+    }
+
+    // Liens YouTube enregistrés avant la récupération automatique du nom de la chaîne.
+    launch(Dispatchers.IO) {
+        runCatching { users.fillYouTubeLabels() }
+            .onSuccess { if (it > 0) log.info("{} lien(s) YouTube complété(s) avec le nom de la chaîne", it) }
+            .onFailure { log.warn("Conversion des liens YouTube impossible", it) }
     }
 
     // Purge périodique des posts expirés.

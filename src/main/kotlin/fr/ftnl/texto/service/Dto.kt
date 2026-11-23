@@ -3,7 +3,8 @@ package fr.ftnl.texto.service
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SocialDto(val icon: String, val url: String)
+/** [label] : nom affiché, renseigné par le serveur (ignoré en entrée). */
+data class SocialDto(val icon: String, val url: String, val label: String? = null)
 
 @Serializable
 data class UserMini(val handle: String, val displayName: String, val avatarUrl: String?)

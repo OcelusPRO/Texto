@@ -5,7 +5,8 @@ import type { ModInfo } from "../modpack/model";
 export type Kind = "code" | "text" | "markdown" | "factorio" | "modpack";
 export type Visibility = "public" | "unlisted" | "private";
 
-export interface Social { icon: string; url: string }
+/** [label] : nom affiché renseigné par le serveur (ex. nom de la chaîne YouTube). */
+export interface Social { icon: string; url: string; label?: string | null }
 export interface UserMini { handle: string; displayName: string; avatarUrl: string | null }
 export interface LinkedAccount { provider: string; username: string; avatarUrl: string | null; linkedAt: number }
 export interface Me {

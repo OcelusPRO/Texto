@@ -15,6 +15,7 @@ import fr.ftnl.texto.service.*
 import fr.ftnl.texto.util.ApiException
 import fr.ftnl.texto.util.SocialIcons
 import fr.ftnl.texto.util.SocialRules
+import fr.ftnl.texto.util.YouTubeChannels
 import fr.ftnl.texto.util.TokenCipher
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -502,6 +503,42 @@ class ProfileAndEmbedTest {
         admin.deleteUser(adminId, existing)
         assertEquals(0, dbBlocking { Users.selectAll().where { Users.id eq existing }.count() })
         assertEquals(0, dbBlocking { Posts.selectAll().where { Posts.user eq existing }.count() }, "ses posts disparaissent avec lui")
+    }
+
+    @Test
+    fun `youtube links show the channel name`() {
+        assertEquals("UCLPO5paF21GqRgaHo3axH9Q", YouTubeChannels.channelId("https://www.youtube.com/channel/UCLPO5paF21GqRgaHo3axH9Q"))
+        assertEquals(null, YouTubeChannels.channelId("https://www.youtube.com/@x"))
+        assertTrue(YouTubeChannels.isChannel("https://youtube.com/@x"))
+        assertFalse(YouTubeChannels.isChannel("https://www.youtube.com/watch?v=abc"))
+        val page = """<meta property="og:title" content="Tom &amp; Jerry"> ..."vanityChannelUrl":"http://www.youtube.com/@As2piK_YT"..."""
+        assertEquals("@As2piK_YT", YouTubeChannels.handleFromPage(page))
+        assertEquals("Tom & Jerry", YouTubeChannels.nameFromPage(page))
+
+        var calls = 0
+        val users = UserService(cfg) { url ->
+            calls++
+            if (YouTubeChannels.channelId(url) != null) YouTubeChannels.Info("https://www.youtube.com/@chaine", "Ma Chaîne") else YouTubeChannels.Info(url, "Autre")
+        }
+        val id = newUser(users, "discord", "d-301", "Tuber")
+        users.setSocials(id, listOf(
+            SocialDto("youtube", "https://www.youtube.com/channel/UCLPO5paF21GqRgaHo3axH9Q"),
+            SocialDto("youtube", "https://youtube.com/@autre"),
+            SocialDto("github", "https://github.com/x", label = "ignoré"),
+        ))
+        assertEquals(
+            listOf(SocialDto("youtube", "https://www.youtube.com/@chaine", "Ma Chaîne"), SocialDto("youtube", "https://youtube.com/@autre", "Autre"), SocialDto("github", "https://github.com/x")),
+            users.me(id).socials,
+        )
+        // Lien inchangé : le nom connu est réutilisé sans nouvelle requête.
+        calls = 0
+        users.setSocials(id, users.me(id).socials)
+        assertEquals(0, calls)
+
+        // Rattrapage des liens enregistrés sans nom.
+        UserService(cfg) { null }.setSocials(id, listOf(SocialDto("youtube", "https://www.youtube.com/channel/UCLPO5paF21GqRgaHo3axH9Q")))
+        assertTrue(users.fillYouTubeLabels() >= 1)
+        assertEquals(listOf(SocialDto("youtube", "https://www.youtube.com/@chaine", "Ma Chaîne")), users.me(id).socials)
     }
 
     @Test

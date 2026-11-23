@@ -6,6 +6,7 @@ import fr.ftnl.texto.util.Crypto
 import fr.ftnl.texto.util.SocialIcons
 import fr.ftnl.texto.util.SocialRules
 import fr.ftnl.texto.util.TokenCipher
+import fr.ftnl.texto.util.YouTubeChannels
 import fr.ftnl.texto.util.badRequest
 import fr.ftnl.texto.util.conflict
 import fr.ftnl.texto.util.forbidden
@@ -41,7 +42,11 @@ fun userRowByHandleOrAlias(handle: String): ResultRow? {
     return Users.selectAll().where { Users.id eq uid }.singleOrNull()
 }
 
-class UserService(private val cfg: AppConfig) {
+class UserService(
+    private val cfg: AppConfig,
+    /** Nom (et lien `@handle`) d'une chaîne YouTube ; null : inconnu. */
+    private val youtubeLookup: (String) -> YouTubeChannels.Info? = YouTubeChannels::lookup,
+) {
     private val cipher = TokenCipher(cfg.sessionEncryptKey + "|" + cfg.sessionSignKey)
 
     // ---------------------------------------------------------------- réglages modifiables par l'administration
@@ -378,22 +383,62 @@ class UserService(private val cfg: AppConfig) {
 
     fun socials(userId: Long): List<SocialDto> =
         SocialLinks.selectAll().where { SocialLinks.user eq userId }.orderBy(SocialLinks.position)
-            .map { SocialDto(it[SocialLinks.icon], it[SocialLinks.url]) }
+            .map { SocialDto(it[SocialLinks.icon], it[SocialLinks.url], it[SocialLinks.label]) }
 
-    fun setSocials(userId: Long, list: List<SocialDto>) = dbBlocking {
+    fun setSocials(userId: Long, list: List<SocialDto>) {
         if (list.size > 12) badRequest("too_many")
-        Users.update({ Users.id eq userId }) { it[profileEdited] = true }
-        SocialLinks.deleteWhere { SocialLinks.user eq userId }
-        list.forEachIndexed { i, s ->
+        val checked = list.map { s ->
             val key = SocialIcons.resolve(s.icon, s.url)
             if (!SocialRules.valid(key, s.url)) badRequest("invalid_social_url", key)
-            SocialLinks.insert {
-                it[user] = userId
-                it[icon] = key
-                it[url] = s.url.trim().take(512)
-                it[position] = i
+            key to s.url.trim()
+        }
+        // Noms déjà connus : pas de nouvelle requête vers YouTube pour un lien inchangé.
+        val known = dbBlocking {
+            SocialLinks.select(SocialLinks.url, SocialLinks.label).where { SocialLinks.user eq userId }
+                .mapNotNull { r -> r[SocialLinks.label]?.let { r[SocialLinks.url] to it } }.toMap()
+        }
+        // Résolu hors transaction : requête réseau vers YouTube.
+        val resolved = checked.map { (key, url) ->
+            when {
+                key != "youtube" -> Triple(key, url, null)
+                known[url] != null -> Triple(key, url, known[url])
+                else -> youtubeLookup(url).let { Triple(key, it?.url ?: url, it?.name) }
             }
         }
+        dbBlocking {
+            Users.update({ Users.id eq userId }) { it[profileEdited] = true }
+            SocialLinks.deleteWhere { SocialLinks.user eq userId }
+            resolved.forEachIndexed { i, (key, u, name) ->
+                SocialLinks.insert {
+                    it[user] = userId
+                    it[icon] = key
+                    it[url] = u.take(512)
+                    it[label] = name
+                    it[position] = i
+                }
+            }
+        }
+    }
+
+    /** Rattrapage : renseigne le nom des chaînes YouTube enregistrées sans nom. Retourne le nombre de liens modifiés. */
+    fun fillYouTubeLabels(): Int {
+        val rows = dbBlocking {
+            SocialLinks.select(SocialLinks.id, SocialLinks.url)
+                .where { (SocialLinks.icon eq "youtube") and SocialLinks.label.isNull() }
+                .map { it[SocialLinks.id].value to it[SocialLinks.url] }
+        }
+        var changed = 0
+        for ((id, url) in rows) {
+            val info = youtubeLookup(url) ?: continue
+            dbBlocking {
+                SocialLinks.update({ (SocialLinks.id eq id) and (SocialLinks.url eq url) }) {
+                    it[SocialLinks.url] = info.url.take(512)
+                    it[label] = info.name
+                }
+            }
+            changed++
+        }
+        return changed
     }
 
     fun publicProfile(handle: String): UserPublicDto = dbBlocking {
