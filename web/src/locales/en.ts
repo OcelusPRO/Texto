@@ -6,7 +6,7 @@ const en: Messages = {
     settings: "Settings", admin: "Admin", logout: "Sign out", new: "New",
   },
   common: { cancel: "Cancel", delete: "Delete", rename: "Rename", save: "Save", done: "Done" },
-  kind: { code: "Code", markdown: "Markdown", text: "Text", factorio: "Factorio" },
+  kind: { code: "Code", markdown: "Markdown", text: "Text", factorio: "Factorio", modpack: "Modpack" },
   visibility: {
     public: "Public", unlisted: "Unlisted", private: "Private",
     publicHint: "Shown on your profile and reachable by link.",
@@ -47,6 +47,24 @@ const en: Messages = {
     edit: "Edit", editInFbe: "Open in Factorio Blueprint Editor", estimatedSize: "Estimated size: {{w}}×{{h}}",
     info: "Info", rawString: "Raw string", viewGame: "Game", viewSchema: "Schematic", fbeHint: "Ctrl+C in the editor to pick up your changes", edited: "Blueprint edited", saveVersion: "Save as new version",
     bom: "Bill of materials", emptyPlanner: "No rules.",
+  },
+  modpack: {
+    mods_one: "{{count}} mod", mods_other: "{{count}} mods", factorio: "Factorio {{v}}", noMods: "No mods in this modpack.",
+    search: "Filter mods…", expandAll: "Expand all", collapseAll: "Collapse all", flat: "List", tree: "Tree",
+    modList: "mod-list.json", modListHint: "Put it in the game's mods folder (the mods themselves still need to be downloaded).",
+    copyList: "Copy list", listCopied: "List copied", page: "Mod page", download: "Download version {{v}}",
+    downloadLatest: "Download latest version", official: "Official", modpack: "Modpack", missing: "Dependency missing from the pack",
+    missingTitle: "Missing required dependencies", notFound: "Not found on the mod portal", newer: "Newer: {{v}}",
+    loading: "Loading mod portal info…", by: "by {{owner}}", contains_one: "{{count}} related mod", contains_other: "{{count}} related mods",
+    image: "Cover image (URL)", factorioVersion: "Factorio version", readme: "Presentation (Markdown)",
+    importTitle: "Import from a save",
+    importHint: "Pick a save (.zip), an extracted save folder, your saves folder or your mods folder. Everything is read in your browser: only the mod list is kept, nothing else is uploaded.",
+    pickFiles: ".zip files / mod-list.json", pickFolder: "Folder", drop: "or drop them here", reading: "Reading…",
+    found_one: "{{count}} save found", found_other: "{{count}} saves found", noneFound: "No save or mod-list.json recognised.",
+    failed: "Unreadable: {{files}}", use: "Use", merge: "Add", replaceConfirm: "Replace the current list ({{count}} mods)?",
+    imported_one: "{{count}} mod imported", imported_other: "{{count}} mods imported", builtinOnly: "Vanilla (no mods)",
+    addMod: "Add a mod (internal name)", add: "Add", name: "Name", version: "Version", url: "Link (off-portal)", note: "Note",
+    remove: "Remove", anyVersion: "latest", clear: "Remove all", preview: "Preview", edit: "List",
   },
   dashboard: {
     allPosts: "All my posts", unfiled: "Unfiled", moved: "Moved", folders: "Folders", newFolder: "New folder",
@@ -128,7 +146,7 @@ const en: Messages = {
     provider_disabled: "This provider isn't configured.", provider_already_linked: "An account from this provider is already linked.",
     http_429: "Too many requests, wait a minute.", missing_scope: "The token lacks the required permissions.",
     forbidden: "Forbidden.", not_found: "Not found.", invalid_url: "Invalid URL.", too_many: "Limit reached.",
-    internal_error: "Internal server error.", invalid_folder: "Invalid folder.", bad_origin: "Request origin refused.",
+    internal_error: "Internal server error.", invalid_modpack: "Invalid modpack.", invalid_folder: "Invalid folder.", bad_origin: "Request origin refused.",
   },
 };
 

@@ -7,6 +7,7 @@ import { api, ApiError, type Post } from "../lib/api";
 import { fullDate, relativeTime } from "../lib/format";
 import { useConfig, useMe } from "../lib/session";
 import { FactorioView } from "../factorio/FactorioView";
+import { ModpackView } from "../modpack/ModpackView";
 import { VisibilityIcon } from "../components/Organize";
 import { Avatar, Button, Card, Input, Modal, PageSpinner, TagChip, useCopy, useToast } from "../components/ui";
 import { CodeEditor, MarkdownView } from "../components/Viewers";
@@ -67,7 +68,7 @@ function PostContent({ post, password }: { post: Post; password?: string }) {
   const canDelete = post.isOwner || me?.role === "admin";
 
   const download = () => {
-    const ext = s.kind === "markdown" ? "md" : s.kind === "factorio" ? "txt" : extensionFor(s.language);
+    const ext = s.kind === "markdown" ? "md" : s.kind === "factorio" ? "txt" : s.kind === "modpack" ? "json" : extensionFor(s.language);
     const blob = new Blob([post.content], { type: "text/plain;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -132,6 +133,8 @@ function PostContent({ post, password }: { post: Post; password?: string }) {
             },
           } : undefined}
         />
+      ) : s.kind === "modpack" ? (
+        <ModpackView content={post.content} title={s.title} />
       ) : s.kind === "markdown" ? (
         <div className="max-w-4xl"><MarkdownView content={post.content} /></div>
       ) : (

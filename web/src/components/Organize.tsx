@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { ChevronRight, Eye, FileCode2, FileText, Flame, Folder as FolderIcon, FolderOpen, Globe, Link2, Lock, NotebookText, Factory, Pencil, Timer } from "lucide-react";
+import { ChevronRight, Eye, FileCode2, FileText, Flame, Folder as FolderIcon, FolderOpen, Globe, Link2, Lock, NotebookText, Factory, Package, Pencil, Timer } from "lucide-react";
 import { useMemo, useState, type DragEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
@@ -165,6 +165,7 @@ export function FolderTree({
 export function KindIcon({ kind, className }: { kind: string; className?: string }) {
   const c = clsx("size-4 shrink-0", className);
   if (kind === "factorio") return <Factory className={clsx(c, "text-zinc-400")} />;
+  if (kind === "modpack") return <Package className={clsx(c, "text-zinc-400")} />;
   if (kind === "markdown") return <NotebookText className={clsx(c, "text-zinc-400")} />;
   if (kind === "text") return <FileText className={clsx(c, "text-zinc-400")} />;
   return <FileCode2 className={clsx(c, "text-zinc-400")} />;

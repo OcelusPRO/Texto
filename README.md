@@ -10,6 +10,12 @@ Pastebin personnel : code, texte, Markdown (avec Mermaid) et plans Factorio.
 - Recherche plein texte (PostgreSQL).
 - Visionneuse Factorio : plans, livres, planificateurs ; 1.1, 2.0 et Space Age ; entités de mods inconnues
   affichées en blocs avec leur nom et le mod deviné ; liste des matériaux ; icônes du jeu si elles sont exportées.
+- Modpacks Factorio : liste des mods avec image, résumé, auteur, liens vers le portail et téléchargement de la version
+  exacte ; chaque mod regroupe ses dépendances requises en arborescence repliable (une dépendance partagée apparaît sous
+  chacun des mods qui l'exigent, une dépendance absente du pack est signalée) ; export `mod-list.json`.
+  La liste s'importe depuis une sauvegarde (.zip ou dossier), le dossier `saves` ou le dossier `mods` : le fichier est
+  lu dans le navigateur et seule la liste (nom + version) est envoyée. Les fiches viennent de l'API publique de
+  mods.factorio.com, via le serveur (`POST /api/factorio/mods`, cache mémoire 12 h).
 - Aperçus de liens : OpenGraph et « component embeds » Discord, image générée.
 - API REST (`/api/docs`) avec tokens, CLI (`/cli/texto.mjs`), panneau admin.
 

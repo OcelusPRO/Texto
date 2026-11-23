@@ -97,7 +97,7 @@ fun Application.module(cfg: AppConfig) {
         swaggerUI(path = "api/docs", swaggerFile = "openapi/documentation.yaml")
         oauthRoutes(cfg, users)
         passkeyRoutes(PasskeyService(cfg))
-        apiRoutes(cfg, users, posts, admin, sync, legacyDates)
+        apiRoutes(cfg, users, posts, admin, sync, legacyDates, ModPortal())
         legacyRoutes(cfg, users, posts)
         webRoutes(cfg, posts, users, OgImageRenderer())
     }

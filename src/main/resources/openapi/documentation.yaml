@@ -28,7 +28,7 @@ components:
       properties:
         title: { type: string }
         description: { type: string }
-        kind: { type: string, enum: [code, text, markdown, factorio] }
+        kind: { type: string, enum: [code, text, markdown, factorio, modpack] }
         language: { type: string, description: "Nom CodeMirror (Kotlin, Python…)" }
         content: { type: string }
         visibility: { type: string, enum: [public, unlisted, private] }

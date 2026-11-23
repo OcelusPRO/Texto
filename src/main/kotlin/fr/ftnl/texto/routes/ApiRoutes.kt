@@ -38,8 +38,11 @@ private fun ApplicationCall.registerView(key: String): Boolean {
     return true
 }
 
-fun Route.apiRoutes(cfg: AppConfig, users: UserService, posts: PostService, admin: AdminService, sync: ProfileSync, legacyDates: LegacyDates) {
+fun Route.apiRoutes(cfg: AppConfig, users: UserService, posts: PostService, admin: AdminService, sync: ProfileSync, legacyDates: LegacyDates, modPortal: ModPortal) {
     route("/api") {
+        // Fiches du portail des mods Factorio (titre, image, dépendances…) pour la vue modpack.
+        post("/factorio/mods") { call.respond(modPortal.lookup(call.receive())) }
+
         get("/config") {
             call.respond(
                 PublicConfigDto(

@@ -1,6 +1,8 @@
 // Client de l'API Texto (mêmes formes que les DTO Kotlin de service/Dto.kt).
 
-export type Kind = "code" | "text" | "markdown" | "factorio";
+import type { ModInfo } from "../modpack/model";
+
+export type Kind = "code" | "text" | "markdown" | "factorio" | "modpack";
 export type Visibility = "public" | "unlisted" | "private";
 
 export interface Social { icon: string; url: string }
@@ -139,6 +141,9 @@ export const api = {
   revisions: (key: string) => get<RevisionSummary[]>(`/api/posts/${key}/revisions`),
   revision: (key: string, n: number) => get<Revision>(`/api/posts/${key}/revisions/${n}`),
   restore: (key: string, n: number) => request<PostSummary>("POST", `/api/posts/${key}/revisions/${n}/restore`),
+
+  /** Fiches du portail des mods Factorio (via le serveur, mises en cache). */
+  factorioMods: (mods: { name: string; version?: string }[]) => request<ModInfo[]>("POST", "/api/factorio/mods", { mods }),
 
   user: (handle: string) => get<UserPublic>(`/api/users/${handle}`),
   userPosts: (handle: string, page = 1, q?: string, folder?: number, f: { kind?: string; tag?: string[]; sort?: string } = {}) =>

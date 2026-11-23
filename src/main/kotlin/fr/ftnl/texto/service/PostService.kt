@@ -27,7 +27,7 @@ data class PostQuery(
 class PostService(private val cfg: AppConfig) {
 
     companion object {
-        val KINDS = setOf("code", "text", "markdown", "factorio")
+        val KINDS = setOf("code", "text", "markdown", "factorio", "modpack")
         val VISIBILITIES = setOf("public", "unlisted", "private")
         const val MAX_REVISIONS = 200
         private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
@@ -39,6 +39,7 @@ class PostService(private val cfg: AppConfig) {
         val content = input.content ?: badRequest("content_required")
         validateContent(content)
         val kind = input.kind?.takeIf { it in KINDS } ?: detectKind(content)
+        if (kind == "modpack") validateModpack(content)
         val title = input.title?.trim()?.take(200)?.ifBlank { null } ?: defaultTitle(kind)
         val now = Instant.now()
         val key = generateKey()
@@ -195,6 +196,7 @@ class PostService(private val cfg: AppConfig) {
         val newKind = input.kind?.takeIf { it in KINDS } ?: row[Posts.kind]
         val newLang = if (input.language != null) input.language.take(40).ifBlank { null } else row[Posts.language]
         val newContent = input.content ?: row[Posts.content]
+        if (newKind == "modpack" && (input.content != null || newKind != row[Posts.kind])) validateModpack(newContent)
         // Une version n'est créée que si le contenu change (les espaces de fin ne comptent pas) : titre, description,
         // type, langage, tags, dossier… se modifient sans toucher à l'historique.
         val contentChanged = newContent.trimEnd() != row[Posts.content].trimEnd()
@@ -543,6 +545,15 @@ class PostService(private val cfg: AppConfig) {
         if (content.length > cfg.maxContentLength) throw ApiException(HttpStatusCode.PayloadTooLarge, "too_large")
     }
 
+    /** Un modpack est un objet JSON avec au moins une liste « mods » (voir web/src/modpack/model.ts). */
+    private fun validateModpack(content: String) {
+        val ok = runCatching {
+            val o = kotlinx.serialization.json.Json.parseToJsonElement(content) as kotlinx.serialization.json.JsonObject
+            o["mods"] is kotlinx.serialization.json.JsonArray
+        }.getOrDefault(false)
+        if (!ok) badRequest("invalid_modpack")
+    }
+
     private fun generateKey(): String {
         repeat(20) {
             val key = Crypto.randomKey(cfg.keyLength.coerceIn(6, 32))
@@ -610,5 +621,9 @@ class PostService(private val cfg: AppConfig) {
         return "code"
     }
 
-    private fun defaultTitle(kind: String) = if (kind == "factorio") "Blueprint" else "Sans titre"
+    private fun defaultTitle(kind: String) = when (kind) {
+        "factorio" -> "Blueprint"
+        "modpack" -> "Modpack"
+        else -> "Sans titre"
+    }
 }

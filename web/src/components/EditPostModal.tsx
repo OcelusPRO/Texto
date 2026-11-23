@@ -99,7 +99,7 @@ function Form({ post, onClose }: { post: Post; onClose: () => void }) {
         </label>
         <label className="block"><Label>{t("editor.kind")}</Label>
           <Select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
-            {(["code", "markdown", "text", "factorio"] as Kind[]).map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
+            {(["code", "markdown", "text", "factorio", "modpack"] as Kind[]).map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
           </Select>
         </label>
         {kind === "code" && (

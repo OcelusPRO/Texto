@@ -10,6 +10,7 @@ import { useConfig } from "../lib/session";
 import { FbeFrame } from "../factorio/FbeFrame";
 import { FactorioView, useFbeAvailable } from "../factorio/FactorioView";
 import { looksLikeBlueprint } from "../factorio/model";
+import { ModpackEditor } from "../modpack/ModpackEditor";
 import { buildTree, TagInput, type FolderNode } from "./Organize";
 import { Button, Input, Label, Select, Textarea, useToast } from "./ui";
 import { CodeEditor, MarkdownView } from "./Viewers";
@@ -104,7 +105,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
     return out;
   }, [folders]);
 
-  const kinds: Kind[] = ["code", "markdown", "text", "factorio"];
+  const kinds: Kind[] = ["code", "markdown", "text", "factorio", "modpack"];
   const bare = "h-8 rounded-none border-0 border-b border-transparent bg-transparent px-1 focus:border-zinc-500 focus:ring-0 dark:bg-transparent";
 
   return (
@@ -174,6 +175,8 @@ export function PostEditor({ existing }: { existing?: Post }) {
 
       {kind === "markdown" && mdTab === "preview" ? (
         <div className="min-h-[75vh] p-2"><MarkdownView content={content} /></div>
+      ) : kind === "modpack" ? (
+        <ModpackEditor content={content} onChange={setContent} />
       ) : kind === "factorio" ? (
         <div className="space-y-3">
           <Textarea value={content} onChange={(e) => setContent(e.target.value.trim())} rows={3} placeholder="0eNq…" className="font-mono text-xs break-all" autoFocus={!existing} />

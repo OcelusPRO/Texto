@@ -4,7 +4,7 @@ const fr = {
     settings: "Paramètres", admin: "Administration", logout: "Déconnexion", new: "Nouveau",
   },
   common: { cancel: "Annuler", delete: "Supprimer", rename: "Renommer", save: "Enregistrer", done: "Terminé" },
-  kind: { code: "Code", markdown: "Markdown", text: "Texte", factorio: "Factorio" },
+  kind: { code: "Code", markdown: "Markdown", text: "Texte", factorio: "Factorio", modpack: "Modpack" },
   visibility: {
     public: "Public", unlisted: "Non listé", private: "Privé",
     publicHint: "Visible sur votre profil et accessible par lien.",
@@ -45,6 +45,24 @@ const fr = {
     edit: "Éditer", editInFbe: "Ouvrir dans Factorio Blueprint Editor", estimatedSize: "Taille estimée : {{w}}×{{h}}",
     info: "Infos", rawString: "Chaîne brute", viewGame: "Jeu", viewSchema: "Schéma", fbeHint: "Ctrl+C dans l'éditeur pour récupérer vos modifications", edited: "Plan modifié", saveVersion: "Enregistrer une nouvelle version",
     bom: "Liste des matériaux", emptyPlanner: "Aucune règle.",
+  },
+  modpack: {
+    mods_one: "{{count}} mod", mods_other: "{{count}} mods", factorio: "Factorio {{v}}", noMods: "Aucun mod dans ce modpack.",
+    search: "Filtrer les mods…", expandAll: "Tout déplier", collapseAll: "Tout replier", flat: "Liste", tree: "Arborescence",
+    modList: "mod-list.json", modListHint: "À placer dans le dossier mods du jeu (les mods eux-mêmes restent à télécharger).",
+    copyList: "Copier la liste", listCopied: "Liste copiée", page: "Page du mod", download: "Télécharger la version {{v}}",
+    downloadLatest: "Télécharger la dernière version", official: "Officiel", modpack: "Modpack", missing: "Dépendance absente du pack",
+    missingTitle: "Dépendances requises absentes", notFound: "Introuvable sur le portail", newer: "Plus récente : {{v}}",
+    loading: "Chargement des infos du portail…", by: "par {{owner}}", contains_one: "{{count}} mod lié", contains_other: "{{count}} mods liés",
+    image: "Image de présentation (URL)", factorioVersion: "Version de Factorio", readme: "Présentation (Markdown)",
+    importTitle: "Importer depuis une sauvegarde",
+    importHint: "Choisissez une sauvegarde (.zip), un dossier de sauvegarde, votre dossier saves ou votre dossier mods. Tout est lu dans votre navigateur : seule la liste des mods est gardée, rien d'autre n'est envoyé.",
+    pickFiles: "Fichiers .zip / mod-list.json", pickFolder: "Dossier", drop: "ou déposez-les ici", reading: "Lecture…",
+    found_one: "{{count}} sauvegarde trouvée", found_other: "{{count}} sauvegardes trouvées", noneFound: "Aucune sauvegarde ni mod-list.json reconnu.",
+    failed: "Illisibles : {{files}}", use: "Utiliser", merge: "Ajouter", replaceConfirm: "Remplacer la liste actuelle ({{count}} mods) ?",
+    imported_one: "{{count}} mod importé", imported_other: "{{count}} mods importés", builtinOnly: "Vanilla (aucun mod)",
+    addMod: "Ajouter un mod (nom interne)", add: "Ajouter", name: "Nom", version: "Version", url: "Lien (hors portail)", note: "Note",
+    remove: "Retirer", anyVersion: "dernière", clear: "Tout retirer", preview: "Aperçu", edit: "Liste",
   },
   dashboard: {
     allPosts: "Tous mes posts", unfiled: "Sans dossier", moved: "Déplacé", folders: "Dossiers", newFolder: "Nouveau dossier",
@@ -126,7 +144,7 @@ const fr = {
     provider_disabled: "Ce fournisseur n'est pas configuré.", provider_already_linked: "Un compte de ce fournisseur est déjà lié.",
     http_429: "Trop de requêtes, patientez une minute.", missing_scope: "Le token n'a pas les droits nécessaires.",
     forbidden: "Action interdite.", not_found: "Introuvable.", invalid_url: "URL invalide.", too_many: "Limite atteinte.",
-    internal_error: "Erreur interne du serveur.", invalid_folder: "Dossier invalide.", bad_origin: "Origine de la requête refusée.",
+    internal_error: "Erreur interne du serveur.", invalid_modpack: "Modpack invalide.", invalid_folder: "Dossier invalide.", bad_origin: "Origine de la requête refusée.",
   },
 };
 

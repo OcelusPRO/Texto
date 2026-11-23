@@ -138,7 +138,7 @@ function DashboardInner() {
           </div>
           <Select value={kind} onChange={(e) => update({ kind: e.target.value || null })} className="w-auto">
             <option value="">{t("dashboard.allKinds")}</option>
-            {["code", "markdown", "text", "factorio"].map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
+            {["code", "markdown", "text", "factorio", "modpack"].map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
           </Select>
           <Select value={visibility} onChange={(e) => update({ visibility: e.target.value || null })} className="w-auto">
             <option value="">{t("dashboard.allVisibilities")}</option>

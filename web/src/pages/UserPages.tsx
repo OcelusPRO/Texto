@@ -171,7 +171,7 @@ export function ProfilePage() {
           </div>
           <Select value={kind} onChange={(e) => { setKind(e.target.value); setPage(1); }} className="w-auto">
             <option value="">{t("dashboard.allKinds")}</option>
-            {["code", "markdown", "text", "factorio"].map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
+            {["code", "markdown", "text", "factorio", "modpack"].map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
           </Select>
           <Select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} className="w-auto">
             {["updated", "created", "title", "views"].map((s) => <option key={s} value={s}>{t(`dashboard.sort.${s}`)}</option>)}

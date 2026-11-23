@@ -108,6 +108,7 @@ private fun buildHead(cfg: AppConfig, segments: List<String>, posts: PostService
         val image = "${cfg.baseUrl}/og/$key.png?v=${s.revision}"
         val kindLabel = when (s.kind) {
             "factorio" -> "Plan Factorio"
+            "modpack" -> "Modpack Factorio"
             "markdown" -> "Markdown"
             "text" -> "Texte"
             else -> s.language ?: "Code"
