@@ -11,8 +11,8 @@ import { FbeFrame } from "../factorio/FbeFrame";
 import { FactorioView, useFbeAvailable } from "../factorio/FactorioView";
 import { looksLikeBlueprint } from "../factorio/model";
 import { ModpackEditor, type IncomingSaves } from "../modpack/ModpackEditor";
-import { DEFAULT_GAME, gameOf, MODPACK_GAMES } from "../modpack/games";
-import { filesFromDataTransfer, maybeSaves, parseSelection } from "../modpack/saveMods";
+import { DEFAULT_GAME, gameLabel, gameOf, MODPACK_GAMES } from "../modpack/games";
+import { filesFromDataTransfer, importableGames, mainGame, maybeSaves, parseSaves } from "../modpack/importers";
 import { buildTree, TagInput, type FolderNode } from "./Organize";
 import { Button, Input, Label, Select, Textarea, useToast } from "./ui";
 import { CodeEditor, MarkdownView } from "./Viewers";
@@ -71,13 +71,15 @@ export function PostEditor({ existing }: { existing?: Post }) {
       const pending = filesFromDataTransfer(dt);
       const files = await pending;
       if (!files.length) return;
-      const r = await parseSelection(files);
-      if (!r.saves.length) { toast(t("modpack.noneFound"), "error"); return; }
+      const r = await parseSaves(files);
+      const game = mainGame(r.saves);
+      if (!game) { toast(t("modpack.noneFound"), "error"); return; }
+      // Le jeu du modpack suit le format de sauvegarde reconnu.
       setKind("modpack");
-      setLanguage((l) => (MODPACK_GAMES.some((g) => g.key === l) ? l : DEFAULT_GAME));
+      setLanguage(game);
       if (r.saves.length === 1) setTitle((x) => x || r.saves[0].name);
       setIncoming({ id: Date.now(), ...r });
-      toast(t("modpack.detected"));
+      toast(t("modpack.detected", { game: gameLabel(game) }));
     };
     const onOver = (e: DragEvent) => {
       if (!e.dataTransfer?.types.includes("Files") || inZone(e)) { setDragging(false); return; }
@@ -173,7 +175,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
       {dragging && (
         <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-zinc-950/40 backdrop-blur-[1px]">
           <div className="flex items-center gap-2 rounded-md border-2 border-dashed border-zinc-300 bg-white px-6 py-4 text-sm font-medium dark:border-zinc-600 dark:bg-zinc-900">
-            <Package className="size-5 text-zinc-400" />{t("modpack.dropToCreate")}
+            <Package className="size-5 text-zinc-400" />{t("modpack.dropToCreate", { games: importableGames() })}
           </div>
         </div>
       )}
@@ -248,7 +250,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
       {kind === "markdown" && mdTab === "preview" ? (
         <div className="min-h-[75vh] p-2"><MarkdownView content={content} /></div>
       ) : kind === "modpack" ? (
-        <ModpackEditor content={content} onChange={setContent} incoming={incoming} />
+        <ModpackEditor content={content} onChange={setContent} incoming={incoming} game={gameOf(language)} onGameChange={setLanguage} />
       ) : kind === "factorio" ? (
         <div className="space-y-3">
           <Textarea value={content} onChange={(e) => setContent(e.target.value.trim())} rows={3} placeholder="0eNq…" className="font-mono text-xs break-all" autoFocus={!existing} />

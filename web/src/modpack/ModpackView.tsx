@@ -7,6 +7,7 @@ import { api } from "../lib/api";
 import { Button, Input, Spinner, useCopy } from "../components/ui";
 import { MarkdownView } from "../components/Viewers";
 import { cmpVersion } from "./saveMods";
+import { gameLabel, type ModpackGame } from "./games";
 import {
   BUILTIN, BUILTIN_TITLES, buildTree, isModpack, modListJson, parseModpack, portalUrl, safeUrl,
   type ModInfo, type Modpack, type ModpackMod, type TreeNode,
@@ -30,15 +31,19 @@ export function useModInfos(mods: ModpackMod[]) {
   return { infos, loading: q.isLoading && refs.length > 0 };
 }
 
-export function ModpackView({ content, title }: { content: string; title?: string }) {
+export function ModpackView({ content, title, game }: { content: string; title?: string; game: ModpackGame }) {
   const pack = useMemo(() => parseModpack(content), [content]);
-  return <ModpackDisplay pack={pack} title={title} />;
+  return <ModpackDisplay pack={pack} title={title} game={game} />;
 }
 
-export function ModpackDisplay({ pack, title }: { pack: Modpack; title?: string }) {
+const NO_MODS: ModpackMod[] = [];
+
+export function ModpackDisplay({ pack, title, game }: { pack: Modpack; title?: string; game: ModpackGame }) {
   const { t } = useTranslation();
   const copy = useCopy();
-  const { infos, loading } = useModInfos(pack.mods);
+  // Fiches détaillées (image, dépendances…) : portail des mods Factorio uniquement pour l'instant.
+  const factorio = game === "factorio";
+  const { infos, loading } = useModInfos(factorio ? pack.mods : NO_MODS);
   const [filter, setFilter] = useState("");
   const [mode, setMode] = useState<"tree" | "flat">("tree");
   // Nœuds dépliés / repliés à la main (clé : chemin) ; par défaut les modpacks sont dépliés, le reste replié.
@@ -98,14 +103,14 @@ export function ModpackDisplay({ pack, title }: { pack: Modpack; title?: string 
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <span className="inline-flex items-center gap-1.5 font-medium"><Package className="size-4 text-zinc-400" />{t("modpack.mods", { count: userMods.length })}</span>
-        {pack.factorioVersion && <span className="text-zinc-500">{t("modpack.factorio", { v: pack.factorioVersion })}</span>}
+        {pack.factorioVersion && <span className="text-zinc-500">{gameLabel(game)} {pack.factorioVersion}</span>}
         {pack.mods.filter((m) => BUILTIN.has(m.name) && m.name !== "base").map((m) => (
           <span key={m.name} className="rounded-sm bg-amber-500/15 px-1.5 py-px text-xs text-amber-700 dark:text-amber-400">{BUILTIN_TITLES[m.name]}</span>
         ))}
         {loading && <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500"><Spinner className="size-3.5" />{t("modpack.loading")}</span>}
         <div className="ml-auto flex gap-1">
           <Button size="sm" variant="ghost" onClick={() => copy(plainList, t("modpack.listCopied"))} title={t("modpack.copyList")}><Copy className="size-4" /></Button>
-          <Button size="sm" onClick={download} title={t("modpack.modListHint")}><FileJson className="size-4" />{t("modpack.modList")}</Button>
+          {factorio && <Button size="sm" onClick={download} title={t("modpack.modListHint")}><FileJson className="size-4" />{t("modpack.modList")}</Button>}
         </div>
       </div>
 

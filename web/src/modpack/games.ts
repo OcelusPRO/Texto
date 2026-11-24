@@ -1,5 +1,6 @@
 // Sous-catégories des modpacks : le jeu. Rangé dans le champ « language » du post, comme le langage du code.
-// Ajouter un jeu ici, dans PostService.MODPACK_GAMES (backend) et brancher sa vue dans ModpackView / ModpackEditor.
+// Nouveau jeu : l'ajouter ici et dans PostService.MODPACK_GAMES (backend), déclarer son lecteur de sauvegardes
+// dans importers.ts (le jeu est alors reconnu au glisser-déposer), et sa vue détaillée dans ModpackView si besoin.
 
 export const MODPACK_GAMES = [{ key: "factorio", label: "Factorio" }] as const;
 export type ModpackGame = (typeof MODPACK_GAMES)[number]["key"];

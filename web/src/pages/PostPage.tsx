@@ -8,7 +8,7 @@ import { fullDate, relativeTime } from "../lib/format";
 import { useConfig, useMe } from "../lib/session";
 import { FactorioView } from "../factorio/FactorioView";
 import { ModpackView } from "../modpack/ModpackView";
-import { gameLabel } from "../modpack/games";
+import { gameLabel, gameOf } from "../modpack/games";
 import { VisibilityIcon } from "../components/Organize";
 import { Avatar, Button, Card, Input, Modal, PageSpinner, TagChip, useCopy, useToast } from "../components/ui";
 import { CodeEditor, MarkdownView } from "../components/Viewers";
@@ -135,7 +135,7 @@ function PostContent({ post, password }: { post: Post; password?: string }) {
           } : undefined}
         />
       ) : s.kind === "modpack" ? (
-        <ModpackView content={post.content} title={s.title} />
+        <ModpackView content={post.content} title={s.title} game={gameOf(s.language)} />
       ) : s.kind === "markdown" ? (
         <div className="max-w-4xl"><MarkdownView content={post.content} /></div>
       ) : (
