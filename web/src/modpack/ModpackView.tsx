@@ -7,6 +7,7 @@ import { api } from "../lib/api";
 import { Button, Input, Spinner, useCopy } from "../components/ui";
 import { MarkdownView } from "../components/Viewers";
 import { cmpVersion } from "./saveMods";
+import { cachedInfos, storeInfos } from "./modCache";
 import { gameLabel, type ModpackGame } from "./games";
 import {
   BUILTIN, BUILTIN_TITLES, buildTree, builtinRank, isModpack, modListJson, parseModpack, portalUrl, safeUrl,
@@ -20,15 +21,24 @@ export function useModInfos(mods: ModpackMod[]) {
     [mods],
   );
   const key = refs.map((r) => `${r.name}@${r.version ?? ""}`).join(",");
+  // Fiches déjà vues (localStorage) : affichées tout de suite, rafraîchies en arrière-plan si elles ont plus d'1 h.
+  const cached = useMemo(() => cachedInfos(refs), [refs]);
   const q = useQuery({
     queryKey: ["factorio-mods", key],
-    queryFn: () => api.factorioMods(refs),
+    queryFn: async () => {
+      const infos = await api.factorioMods(refs);
+      storeInfos(refs, infos);
+      return infos;
+    },
     enabled: refs.length > 0,
     staleTime: 3600_000,
     retry: 1,
+    ...(cached.complete
+      ? { initialData: cached.infos, initialDataUpdatedAt: cached.at }
+      : { placeholderData: cached.infos.length ? cached.infos : undefined }),
   });
   const infos = useMemo(() => new Map<string, ModInfo>((q.data ?? []).map((i) => [i.name, i])), [q.data]);
-  return { infos, loading: q.isLoading && refs.length > 0 };
+  return { infos, loading: (q.isLoading || q.isPlaceholderData) && refs.length > 0 };
 }
 
 export function ModpackView({ content, title, game }: { content: string; title?: string; game: ModpackGame }) {
