@@ -69,14 +69,17 @@ export function modListJson(m: Modpack): string {
 
 // ---------------------------------------------------------------- dépendances
 
-export type DepKind = "required" | "optional" | "hidden" | "incompatible" | "unordered";
+export type DepKind = "required" | "optional" | "hidden" | "incompatible" | "unordered" | "recommended";
 export interface Dependency { name: string; kind: DepKind; constraint: string }
 
-/** « ? mod >= 1.2 », « (?) mod », « ! mod », « ~ mod », « + mod » (2.x : chargé en même temps). */
+/**
+ * Préfixes de info.json (lua-api.factorio.com, mod-structure) : aucun = obligatoire, « ~ » = obligatoire sans effet sur
+ * l'ordre de chargement, « ? » = optionnel, « (?) » = optionnel caché, « + » = recommandé (pas obligatoire), « ! » = incompatible.
+ */
 export function parseDependency(s: string): Dependency | null {
   const m = /^\s*(\(\?\)|\?|!|~|\+)?\s*([A-Za-z0-9_\-. +]+?)\s*((?:<=|>=|=|<|>)\s*[\d.]+)?\s*$/.exec(s);
   if (!m) return null;
-  const kind: DepKind = m[1] === "?" ? "optional" : m[1] === "(?)" ? "hidden" : m[1] === "!" ? "incompatible" : m[1] === "~" || m[1] === "+" ? "unordered" : "required";
+  const kind: DepKind = m[1] === "?" ? "optional" : m[1] === "(?)" ? "hidden" : m[1] === "!" ? "incompatible" : m[1] === "~" ? "unordered" : m[1] === "+" ? "recommended" : "required";
   return { name: m[2], kind, constraint: m[3]?.replace(/\s+/g, " ") ?? "" };
 }
 
@@ -117,10 +120,15 @@ export function buildTree(mods: ModpackMod[], infos: Map<string, ModInfo>): { ro
     if (done) return done;
     visiting.add(mod.name);
     const children: TreeNode[] = [];
+    // Les dépendances viennent du portail pour la version listée ; si le portail ne l'a pas (repli sur la dernière),
+    // elles peuvent différer : on range les mods présents mais on ne signale pas d'absent.
+    const info = infos.get(mod.name);
+    const exact = !mod.version || info?.version === mod.version;
     for (const d of required(mod.name)) {
       if (visiting.has(d)) continue; // boucle
       const m = byName.get(d);
       if (!m) {
+        if (!exact) continue;
         missing.add(d);
         children.push({ mod: { name: d, version: "" }, children: [], total: 0, missing: true });
         continue;
