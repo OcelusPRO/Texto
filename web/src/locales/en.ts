@@ -64,6 +64,7 @@ const en: Messages = {
     failed: "Unreadable: {{files}}", use: "Use", merge: "Add", replaceConfirm: "Replace the current list ({{count}} mods)?",
     imported_one: "{{count}} mod imported", imported_other: "{{count}} mods imported", builtinOnly: "Vanilla (no mods)",
     addMod: "Add a mod (internal name)", add: "Add", name: "Name", version: "Version", url: "Link (off-portal)", note: "Note",
+    game: "Game", detected: "Factorio save detected: Factorio modpack", dropToCreate: "Drop a Factorio save (.zip, folder) to create a modpack",
     remove: "Remove", anyVersion: "latest", clear: "Remove all", preview: "Preview", edit: "List",
   },
   dashboard: {

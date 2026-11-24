@@ -62,6 +62,7 @@ const fr = {
     failed: "Illisibles : {{files}}", use: "Utiliser", merge: "Ajouter", replaceConfirm: "Remplacer la liste actuelle ({{count}} mods) ?",
     imported_one: "{{count}} mod importé", imported_other: "{{count}} mods importés", builtinOnly: "Vanilla (aucun mod)",
     addMod: "Ajouter un mod (nom interne)", add: "Ajouter", name: "Nom", version: "Version", url: "Lien (hors portail)", note: "Note",
+    game: "Jeu", detected: "Sauvegarde Factorio détectée : modpack Factorio", dropToCreate: "Déposez une sauvegarde Factorio (.zip, dossier) pour créer un modpack",
     remove: "Retirer", anyVersion: "dernière", clear: "Tout retirer", preview: "Aperçu", edit: "Liste",
   },
   dashboard: {

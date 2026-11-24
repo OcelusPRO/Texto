@@ -88,6 +88,11 @@ private fun embedScript(json: String) =
     // `</` ne doit jamais apparaître dans un <script> inline.
     "<script id=\"discord:component-embed\" type=\"application/json\">${json.replace("</", "<\\/")}</script>"
 
+private fun gameLabel(game: String?) = when (game) {
+    "factorio", null -> "Factorio"
+    else -> game.replaceFirstChar(Char::uppercase)
+}
+
 private fun plural(n: Number, one: String, many: String) = "$n ${if (n.toLong() > 1) many else one}"
 
 private fun buildHead(cfg: AppConfig, segments: List<String>, posts: PostService, users: UserService): String {
@@ -108,7 +113,7 @@ private fun buildHead(cfg: AppConfig, segments: List<String>, posts: PostService
         val image = "${cfg.baseUrl}/og/$key.png?v=${s.revision}"
         val kindLabel = when (s.kind) {
             "factorio" -> "Plan Factorio"
-            "modpack" -> "Modpack Factorio"
+            "modpack" -> "Modpack ${gameLabel(s.language)}"
             "markdown" -> "Markdown"
             "text" -> "Texte"
             else -> s.language ?: "Code"

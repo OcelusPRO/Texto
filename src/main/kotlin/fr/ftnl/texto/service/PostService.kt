@@ -28,6 +28,8 @@ class PostService(private val cfg: AppConfig) {
 
     companion object {
         val KINDS = setOf("code", "text", "markdown", "factorio", "modpack")
+        /** Sous-catégories des modpacks (le jeu), rangées dans le champ « language » comme le langage du code. */
+        val MODPACK_GAMES = setOf("factorio")
         val VISIBILITIES = setOf("public", "unlisted", "private")
         const val MAX_REVISIONS = 200
         private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
@@ -51,7 +53,7 @@ class PostService(private val cfg: AppConfig) {
             it[Posts.title] = title
             it[description] = input.description?.take(10_000) ?: ""
             it[Posts.kind] = kind
-            it[language] = input.language?.take(40)?.ifBlank { null }
+            it[language] = languageFor(kind, input.language?.take(40)?.ifBlank { null })
             it[Posts.content] = content
             it[visibility] = input.visibility?.takeIf { v -> v in VISIBILITIES } ?: "public"
             it[passwordHash] = input.password?.takeIf(String::isNotEmpty)?.let(Crypto::hashPassword)
@@ -60,7 +62,7 @@ class PostService(private val cfg: AppConfig) {
             it[createdAt] = now
             it[updatedAt] = now
         }.value
-        insertRevision(postId, 1, title, input.description ?: "", kind, input.language, content, now)
+        insertRevision(postId, 1, title, input.description ?: "", kind, languageFor(kind, input.language?.take(40)?.ifBlank { null }), content, now)
         setTags(userId, postId, withVersionTag(kind, content, input.tags.orEmpty()))
         summaries(listOf(postId)).single()
     }
@@ -194,7 +196,7 @@ class PostService(private val cfg: AppConfig) {
         val newTitle = input.title?.trim()?.take(200)?.ifBlank { null } ?: row[Posts.title]
         val newDesc = input.description?.take(10_000) ?: row[Posts.description]
         val newKind = input.kind?.takeIf { it in KINDS } ?: row[Posts.kind]
-        val newLang = if (input.language != null) input.language.take(40).ifBlank { null } else row[Posts.language]
+        val newLang = languageFor(newKind, if (input.language != null) input.language.take(40).ifBlank { null } else row[Posts.language])
         val newContent = input.content ?: row[Posts.content]
         if (newKind == "modpack" && (input.content != null || newKind != row[Posts.kind])) validateModpack(newContent)
         // Une version n'est créée que si le contenu change (les espaces de fin ne comptent pas) : titre, description,
@@ -545,6 +547,10 @@ class PostService(private val cfg: AppConfig) {
         if (content.length > cfg.maxContentLength) throw ApiException(HttpStatusCode.PayloadTooLarge, "too_large")
     }
 
+    /** Un modpack a toujours un jeu connu (Factorio par défaut) ; les autres types gardent la valeur fournie. */
+    private fun languageFor(kind: String, lang: String?): String? =
+        if (kind == "modpack") lang?.lowercase()?.takeIf { it in MODPACK_GAMES } ?: "factorio" else lang
+
     /** Un modpack est un objet JSON avec au moins une liste « mods » (voir web/src/modpack/model.ts). */
     private fun validateModpack(content: String) {
         val ok = runCatching {
@@ -618,6 +624,11 @@ class PostService(private val cfg: AppConfig) {
     private fun detectKind(content: String): String {
         val t = content.trim()
         if (t.length > 20 && (t.startsWith("0e") || t.startsWith("0eN")) && !t.contains(Regex("\\s"))) return "factorio"
+        // Modpack exporté par Texto (CLI / API) : objet JSON avec « format » et une liste « mods ».
+        if (t.startsWith("{") && runCatching {
+                val o = kotlinx.serialization.json.Json.parseToJsonElement(t) as kotlinx.serialization.json.JsonObject
+                o["mods"] is kotlinx.serialization.json.JsonArray && o["format"] != null
+            }.getOrDefault(false)) return "modpack"
         return "code"
     }
 

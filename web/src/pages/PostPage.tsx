@@ -8,6 +8,7 @@ import { fullDate, relativeTime } from "../lib/format";
 import { useConfig, useMe } from "../lib/session";
 import { FactorioView } from "../factorio/FactorioView";
 import { ModpackView } from "../modpack/ModpackView";
+import { gameLabel } from "../modpack/games";
 import { VisibilityIcon } from "../components/Organize";
 import { Avatar, Button, Card, Input, Modal, PageSpinner, TagChip, useCopy, useToast } from "../components/ui";
 import { CodeEditor, MarkdownView } from "../components/Viewers";
@@ -93,7 +94,7 @@ function PostContent({ post, password }: { post: Post; password?: string }) {
           <span title={fullDate(s.updatedAt)}>{relativeTime(s.updatedAt)}</span>
           <span className="inline-flex items-center gap-1"><Eye className="size-3" />{s.views}</span>
           <VisibilityIcon v={s.visibility} />
-          {s.language && <span>{s.language.toLowerCase()}</span>}
+          {s.language && <span>{s.kind === "modpack" ? gameLabel(s.language) : s.language.toLowerCase()}</span>}
           {s.expiresAt && <span>{t("post.expires", { when: relativeTime(s.expiresAt) })}</span>}
           {s.burnAfterViews != null && post.isOwner && <span className="inline-flex items-center gap-1"><Flame className="size-3" />{s.burnAfterViews}</span>}
           {s.tags.map((tag) => <TagChip key={tag.id} name={tag.name} color={tag.color} onClick={post.isOwner ? () => nav(`/dashboard?tag=${encodeURIComponent(tag.name)}`) : undefined} />)}

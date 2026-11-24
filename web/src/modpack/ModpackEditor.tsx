@@ -1,17 +1,22 @@
 import clsx from "clsx";
 import { FolderOpen, FileUp, Plus, Trash2, Upload, X } from "lucide-react";
-import { useMemo, useRef, useState, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Input, Label, Spinner, Textarea, useToast } from "../components/ui";
 import { ModpackDisplay } from "./ModpackView";
-import { parseSelection, type ParsedSave } from "./saveMods";
+import { filesFromDataTransfer, parseSelection, relevant, type ParsedSave } from "./saveMods";
 import { BUILTIN, parseModpack, safeUrl, serializeModpack, type Modpack, type ModpackMod } from "./model";
 
 /** Éditeur d'un post modpack : le contenu reste la chaîne JSON du post. */
-export function ModpackEditor({ content, onChange }: { content: string; onChange: (v: string) => void }) {
+/** Sauvegardes déjà lues ailleurs (glisser-déposer / collage sur la page) ; [id] change à chaque nouvel envoi. */
+export interface IncomingSaves { id: number; saves: ParsedSave[]; failed: string[] }
+
+export function ModpackEditor({ content, onChange, incoming }: { content: string; onChange: (v: string) => void; incoming?: IncomingSaves | null }) {
   const { t } = useTranslation();
   const pack = useMemo(() => parseModpack(content), [content]);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
+  // Une sauvegarde déposée sur la page s'importe dans l'onglet d'édition.
+  useEffect(() => { if (incoming) setTab("edit"); }, [incoming]);
   const set = (p: Partial<Modpack>) => onChange(serializeModpack({ ...pack, ...p }));
   const setMods = (mods: ModpackMod[]) => set({ mods });
 
@@ -29,6 +34,7 @@ export function ModpackEditor({ content, onChange }: { content: string; onChange
       {tab === "preview" ? <ModpackDisplay pack={pack} /> : (
         <>
           <SaveImport
+            incoming={incoming}
             current={pack.mods.length}
             onImport={(save, mode) => {
               const mods = mode === "replace" ? save.mods.map((m) => ({ ...m })) : mergeMods(pack.mods, save.mods);
@@ -70,7 +76,7 @@ function mergeMods(current: ModpackMod[], added: { name: string; version: string
 
 // ---------------------------------------------------------------- import depuis une sauvegarde (local)
 
-function SaveImport({ current, onImport }: { current: number; onImport: (s: ParsedSave, mode: "replace" | "merge") => void }) {
+function SaveImport({ current, onImport, incoming }: { current: number; onImport: (s: ParsedSave, mode: "replace" | "merge") => void; incoming?: IncomingSaves | null }) {
   const { t } = useTranslation();
   const toast = useToast();
   const filesRef = useRef<HTMLInputElement>(null);
@@ -79,18 +85,24 @@ function SaveImport({ current, onImport }: { current: number; onImport: (s: Pars
   const [drag, setDrag] = useState(false);
   const [result, setResult] = useState<{ saves: ParsedSave[]; failed: string[] } | null>(null);
 
+  const show = (r: { saves: ParsedSave[]; failed: string[] }) => {
+    r.saves.sort((a, b) => (b.mods.length - a.mods.length) || a.name.localeCompare(b.name));
+    setResult(r);
+    if (r.saves.length === 1) apply(r.saves[0], "replace");
+  };
+
   const run = async (files: File[]) => {
     if (!files.length) return;
     setBusy(true);
-    try {
-      const r = await parseSelection(files);
-      r.saves.sort((a, b) => (b.mods.length - a.mods.length) || a.name.localeCompare(b.name));
-      setResult(r);
-      if (r.saves.length === 1) apply(r.saves[0], "replace");
-    } finally {
-      setBusy(false);
-    }
+    try { show(await parseSelection(files)); } finally { setBusy(false); }
   };
+
+  const seen = useRef<number | null>(null);
+  useEffect(() => {
+    if (!incoming || seen.current === incoming.id) return;
+    seen.current = incoming.id;
+    show({ saves: [...incoming.saves], failed: incoming.failed });
+  }, [incoming]);
 
   const apply = (s: ParsedSave, mode: "replace" | "merge") => {
     if (mode === "replace" && current > 0 && !confirm(t("modpack.replaceConfirm", { count: current }))) return;
@@ -98,35 +110,20 @@ function SaveImport({ current, onImport }: { current: number; onImport: (s: Pars
     toast(t("modpack.imported", { count: s.mods.filter((m) => !BUILTIN.has(m.name)).length }));
   };
 
-  // Glisser-déposer : fichiers et dossiers (parcours récursif des entrées).
+  // Glisser-déposer : fichiers et dossiers.
   const onDrop = async (e: DragEvent) => {
     e.preventDefault();
     setDrag(false);
-    const items = Array.from(e.dataTransfer.items).map((i) => i.webkitGetAsEntry?.()).filter((x): x is FileSystemEntry => !!x);
-    if (!items.length) return run(Array.from(e.dataTransfer.files));
+    const pending = filesFromDataTransfer(e.dataTransfer);
     setBusy(true);
-    const files: File[] = [];
-    const walk = async (entry: FileSystemEntry, prefix: string): Promise<void> => {
-      if (entry.isFile) {
-        const f = await new Promise<File>((res, rej) => (entry as FileSystemFileEntry).file(res, rej));
-        Object.defineProperty(f, "webkitRelativePath", { value: prefix + entry.name });
-        if (relevant(f)) files.push(f);
-      } else if (entry.isDirectory) {
-        const reader = (entry as FileSystemDirectoryEntry).createReader();
-        for (;;) {
-          const batch = await new Promise<FileSystemEntry[]>((res, rej) => reader.readEntries(res, rej));
-          if (!batch.length) break;
-          // Dans un dossier de mods, seules les archives de premier niveau et mod-list.json servent.
-          for (const c of batch) if (c.isFile || prefix.split("/").length < 3) await walk(c, prefix + entry.name + "/");
-        }
-      }
-    };
-    try { for (const it of items) await walk(it, ""); } finally { setBusy(false); }
+    let files: File[] = [];
+    try { files = await pending; } finally { setBusy(false); }
     run(files);
   };
 
   return (
     <div
+      data-modpack-drop
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
       onDragLeave={() => setDrag(false)}
       onDrop={onDrop}
@@ -172,11 +169,6 @@ function SaveImport({ current, onImport }: { current: number; onImport: (s: Pars
       )}
     </div>
   );
-}
-
-/** Dans un dossier choisi, seuls ces fichiers servent (le reste n'est jamais lu). */
-function relevant(f: File) {
-  return /\.zip$/i.test(f.name) || ["mod-list.json", "level-init.dat", "level.dat", "level.dat0"].includes(f.name);
 }
 
 // ---------------------------------------------------------------- liste éditable

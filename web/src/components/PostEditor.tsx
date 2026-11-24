@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Save, SlidersHorizontal } from "lucide-react";
+import { Package, Save, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -10,7 +10,9 @@ import { useConfig } from "../lib/session";
 import { FbeFrame } from "../factorio/FbeFrame";
 import { FactorioView, useFbeAvailable } from "../factorio/FactorioView";
 import { looksLikeBlueprint } from "../factorio/model";
-import { ModpackEditor } from "../modpack/ModpackEditor";
+import { ModpackEditor, type IncomingSaves } from "../modpack/ModpackEditor";
+import { DEFAULT_GAME, gameOf, MODPACK_GAMES } from "../modpack/games";
+import { filesFromDataTransfer, maybeSaves, parseSelection } from "../modpack/saveMods";
 import { buildTree, TagInput, type FolderNode } from "./Organize";
 import { Button, Input, Label, Select, Textarea, useToast } from "./ui";
 import { CodeEditor, MarkdownView } from "./Viewers";
@@ -50,6 +52,64 @@ export function PostEditor({ existing }: { existing?: Post }) {
   const { data: allTags = [] } = useQuery({ queryKey: ["tags"], queryFn: api.tags });
   const detected = useMemo(() => (kind === "code" && !language ? detectLanguage(content) : null), [kind, language, content]);
 
+  // La sous-catégorie (langage / jeu) n'a de sens que pour son type.
+  const changeKind = (k: Kind) => {
+    if (k === "modpack") setLanguage(DEFAULT_GAME);
+    else if (kind === "modpack") setLanguage("");
+    setKind(k);
+  };
+
+  // Glisser-déposer ou coller une sauvegarde Factorio (.zip, dossier, mod-list.json) n'importe où sur la page :
+  // le post passe en modpack Factorio et la liste des mods est importée (lecture locale, rien n'est envoyé).
+  const [incoming, setIncoming] = useState<IncomingSaves | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const canAutoModpack = !existing || kind === "modpack";
+  useEffect(() => {
+    if (!canAutoModpack) return;
+    const inZone = (e: Event) => (e.target as Element | null)?.closest?.("[data-modpack-drop]");
+    const handle = async (dt: DataTransfer) => {
+      const pending = filesFromDataTransfer(dt);
+      const files = await pending;
+      if (!files.length) return;
+      const r = await parseSelection(files);
+      if (!r.saves.length) { toast(t("modpack.noneFound"), "error"); return; }
+      setKind("modpack");
+      setLanguage((l) => (MODPACK_GAMES.some((g) => g.key === l) ? l : DEFAULT_GAME));
+      if (r.saves.length === 1) setTitle((x) => x || r.saves[0].name);
+      setIncoming({ id: Date.now(), ...r });
+      toast(t("modpack.detected"));
+    };
+    const onOver = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes("Files") || inZone(e)) { setDragging(false); return; }
+      e.preventDefault();
+      setDragging(true);
+    };
+    const onLeave = (e: DragEvent) => { if (!e.relatedTarget) setDragging(false); };
+    const onDrop = (e: DragEvent) => {
+      setDragging(false);
+      if (inZone(e) || !maybeSaves(e.dataTransfer)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handle(e.dataTransfer!);
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      if (!maybeSaves(e.clipboardData)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handle(e.clipboardData!);
+    };
+    window.addEventListener("dragover", onOver, true);
+    window.addEventListener("dragleave", onLeave, true);
+    window.addEventListener("drop", onDrop, true);
+    window.addEventListener("paste", onPaste, true);
+    return () => {
+      window.removeEventListener("dragover", onOver, true);
+      window.removeEventListener("dragleave", onLeave, true);
+      window.removeEventListener("drop", onDrop, true);
+      window.removeEventListener("paste", onPaste, true);
+    };
+  }, [canAutoModpack, toast, t]);
+
   // Coller un plan Factorio bascule automatiquement le type.
   useEffect(() => {
     if (!existing && kind !== "factorio" && looksLikeBlueprint(content)) setKind("factorio");
@@ -64,7 +124,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
       title: title.trim() || undefined,
       description,
       kind,
-      language: kind === "code" ? (language || detected || "") : "",
+      language: kind === "code" ? (language || detected || "") : kind === "modpack" ? gameOf(language) : "",
       content,
       visibility,
       tags,
@@ -110,15 +170,27 @@ export function PostEditor({ existing }: { existing?: Post }) {
 
   return (
     <div className="flex flex-col gap-2">
+      {dragging && (
+        <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-zinc-950/40 backdrop-blur-[1px]">
+          <div className="flex items-center gap-2 rounded-md border-2 border-dashed border-zinc-300 bg-white px-6 py-4 text-sm font-medium dark:border-zinc-600 dark:bg-zinc-900">
+            <Package className="size-5 text-zinc-400" />{t("modpack.dropToCreate")}
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2 border-b border-zinc-300 pb-2 dark:border-zinc-800">
         <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("editor.titlePlaceholder")} className={clsx(bare, "min-w-48 flex-1 font-bold")} maxLength={200} />
-        <Select value={kind} onChange={(e) => setKind(e.target.value as Kind)} className="h-8 w-auto">
+        <Select value={kind} onChange={(e) => changeKind(e.target.value as Kind)} className="h-8 w-auto">
           {kinds.map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
         </Select>
         {kind === "code" && (
           <Select value={language} onChange={(e) => setLanguage(e.target.value)} className="h-8 w-auto">
             <option value="">{detected ? `auto (${detected})` : "auto"}</option>
             {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+          </Select>
+        )}
+        {kind === "modpack" && (
+          <Select value={gameOf(language)} onChange={(e) => setLanguage(e.target.value)} className="h-8 w-auto" title={t("modpack.game")}>
+            {MODPACK_GAMES.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
           </Select>
         )}
         {kind === "markdown" && (
@@ -176,7 +248,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
       {kind === "markdown" && mdTab === "preview" ? (
         <div className="min-h-[75vh] p-2"><MarkdownView content={content} /></div>
       ) : kind === "modpack" ? (
-        <ModpackEditor content={content} onChange={setContent} />
+        <ModpackEditor content={content} onChange={setContent} incoming={incoming} />
       ) : kind === "factorio" ? (
         <div className="space-y-3">
           <Textarea value={content} onChange={(e) => setContent(e.target.value.trim())} rows={3} placeholder="0eNq…" className="font-mono text-xs break-all" autoFocus={!existing} />

@@ -73,7 +73,7 @@ class OgImageRenderer {
             // Statistiques : libellé / valeur, une ligne par info.
             val kind = when (s.kind) {
                 "factorio" -> "plan factorio"
-                "modpack" -> "modpack factorio"
+                "modpack" -> "modpack ${s.language ?: "factorio"}"
                 "markdown" -> "markdown"
                 "text" -> "texte"
                 else -> s.language?.lowercase() ?: "code"

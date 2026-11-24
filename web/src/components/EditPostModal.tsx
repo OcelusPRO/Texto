@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api, ApiError, type Kind, type Post, type PostInput, type Visibility } from "../lib/api";
 import { LANGUAGES } from "../lib/languages";
+import { DEFAULT_GAME, gameOf, MODPACK_GAMES } from "../modpack/games";
 import { buildTree, TagInput, type FolderNode } from "./Organize";
 import { Button, Input, Label, Modal, PageSpinner, Select, Textarea, useToast } from "./ui";
 
@@ -59,7 +60,7 @@ function Form({ post, onClose }: { post: Post; onClose: () => void }) {
     setSaving(true);
     const input: PostInput = {
       title: title.trim() || undefined, description, kind,
-      language: kind === "code" ? language : "",
+      language: kind === "code" ? language : kind === "modpack" ? gameOf(language) : "",
       visibility, tags, burnAfterViews: burn,
       ...(folderId != null ? { folderId } : { clearFolder: true }),
     };
@@ -98,10 +99,21 @@ function Form({ post, onClose }: { post: Post; onClose: () => void }) {
           </Select>
         </label>
         <label className="block"><Label>{t("editor.kind")}</Label>
-          <Select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
+          <Select value={kind} onChange={(e) => {
+            const k = e.target.value as Kind;
+            if (k === "modpack") setLanguage(DEFAULT_GAME); else if (kind === "modpack") setLanguage("");
+            setKind(k);
+          }}>
             {(["code", "markdown", "text", "factorio", "modpack"] as Kind[]).map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
           </Select>
         </label>
+        {kind === "modpack" && (
+          <label className="block"><Label>{t("modpack.game")}</Label>
+            <Select value={gameOf(language)} onChange={(e) => setLanguage(e.target.value)}>
+              {MODPACK_GAMES.map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}
+            </Select>
+          </label>
+        )}
         {kind === "code" && (
           <label className="block"><Label>{t("editor.language")}</Label>
             <Select value={language} onChange={(e) => setLanguage(e.target.value)}>

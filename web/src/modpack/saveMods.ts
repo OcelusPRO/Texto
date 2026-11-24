@@ -234,3 +234,51 @@ export async function parseSelection(files: File[]): Promise<{ saves: ParsedSave
   }
   return { saves, failed };
 }
+
+// ---------------------------------------------------------------- glisser-déposer / coller
+
+/** Seuls ces fichiers servent (le reste d'un dossier n'est jamais lu). */
+export function relevant(f: File) {
+  return /\.zip$/i.test(f.name) || ["mod-list.json", "level-init.dat", "level.dat", "level.dat0"].includes(f.name);
+}
+
+/**
+ * Vrai si ce qui est glissé / collé peut contenir une sauvegarde : un dossier ou un fichier utile.
+ * À appeler pendant l'événement (les entrées ne sont plus lisibles ensuite).
+ */
+export function maybeSaves(dt: DataTransfer | null): boolean {
+  if (!dt) return false;
+  for (const item of Array.from(dt.items ?? [])) {
+    if (item.kind !== "file") continue;
+    const entry = item.webkitGetAsEntry?.();
+    if (entry?.isDirectory) return true;
+    const f = item.getAsFile();
+    if (f && relevant(f)) return true;
+  }
+  return Array.from(dt.files ?? []).some(relevant);
+}
+
+/** Fichiers utiles d'un glisser-déposer ou d'un collage, dossiers compris (parcourus sur 3 niveaux au plus). */
+export async function filesFromDataTransfer(dt: DataTransfer): Promise<File[]> {
+  // Les entrées doivent être récupérées avant le premier await.
+  const entries = Array.from(dt.items ?? []).filter((i) => i.kind === "file").map((i) => i.webkitGetAsEntry?.()).filter((x): x is FileSystemEntry => !!x);
+  const plain = Array.from(dt.files ?? []);
+  if (!entries.length) return plain.filter(relevant);
+  const files: File[] = [];
+  const walk = async (entry: FileSystemEntry, prefix: string): Promise<void> => {
+    if (entry.isFile) {
+      const f = await new Promise<File>((res, rej) => (entry as FileSystemFileEntry).file(res, rej));
+      Object.defineProperty(f, "webkitRelativePath", { value: prefix + entry.name });
+      if (relevant(f)) files.push(f);
+    } else if (entry.isDirectory) {
+      const reader = (entry as FileSystemDirectoryEntry).createReader();
+      for (;;) {
+        const batch = await new Promise<FileSystemEntry[]>((res, rej) => reader.readEntries(res, rej));
+        if (!batch.length) break;
+        for (const c of batch) if (c.isFile || prefix.split("/").length < 3) await walk(c, prefix + entry.name + "/");
+      }
+    }
+  };
+  for (const e of entries) await walk(e, "");
+  return files;
+}

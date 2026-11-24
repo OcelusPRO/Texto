@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router";
 import type { Folder, PostSummary, Tag } from "../lib/api";
 import { bytes, relativeTime } from "../lib/format";
 import { TagChip } from "./ui";
+import { gameLabel } from "../modpack/games";
 
 // ---------------------------------------------------------------- saisie de tags
 
@@ -213,7 +214,7 @@ export function PostRow({ p, draggable, onTagClick, showAuthor, folderLabel, onE
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
           {showAuthor && p.author && <Link to={`/u/${p.author.handle}`} onClick={stop} className="hover:underline">@{p.author.handle}</Link>}
           {folderLabel && <span className="inline-flex items-center gap-1"><FolderIcon className="size-3" />{folderLabel}</span>}
-          {p.language && <span>{p.language}</span>}
+          {p.language && <span>{p.kind === "modpack" ? gameLabel(p.language) : p.language}</span>}
           <span>{relativeTime(p.updatedAt)}</span>
           <span className="inline-flex items-center gap-0.5"><Eye className="size-3" />{p.views}</span>
           <span>{bytes(p.size)}</span>
