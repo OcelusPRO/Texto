@@ -52,7 +52,13 @@ export function ModpackDisplay({ pack, title, game }: { pack: Modpack; title?: s
 
   const { roots, missing } = useMemo(() => buildTree(pack.mods, infos), [pack.mods, infos]);
   const userMods = pack.mods.filter((m) => !BUILTIN.has(m.name));
-  const cover = (safeUrl(pack.image) ? pack.image : "") || pack.mods.map((m) => infos.get(m.name)).find((i) => isModpack(i) && i?.thumbnail)?.thumbnail || "";
+  // Image par défaut : celle du modpack le plus haut dans l'arbre (racine, le plus grand en cas d'égalité).
+  const cover = useMemo(() => {
+    if (safeUrl(pack.image)) return pack.image;
+    const packs = roots.filter((n) => isModpack(n.info) && n.info?.thumbnail).sort((a, b) => b.total - a.total);
+    return packs[0]?.info?.thumbnail
+      || pack.mods.map((m) => infos.get(m.name)).find((i) => isModpack(i) && i?.thumbnail)?.thumbnail || "";
+  }, [pack.image, pack.mods, roots, infos]);
 
   const isOpen = (path: string, n: TreeNode) =>
     toggled.get(path) ?? allOpen ?? isModpack(n.info);
@@ -79,14 +85,14 @@ export function ModpackDisplay({ pack, title, game }: { pack: Modpack; title?: s
   };
   const plainList = pack.mods.map((m) => (m.version ? `${m.name} ${m.version}` : m.name)).join("\n");
 
-  const renderNode = (n: TreeNode, path: string, depth: number) => {
+  const renderNode = (n: TreeNode, path: string, depth: number, link?: SoftLink) => {
     const open = n.children.length > 0 && isOpen(path, n);
     return (
       <li key={path}>
-        <ModRow node={n} depth={depth} open={open} onToggle={n.children.length ? () => toggle(path, n) : undefined} />
+        <ModRow node={n} depth={depth} relation={link} open={open} onToggle={n.children.length ? () => toggle(path, n) : undefined} />
         {open && (
           <ul className="ml-[18px] border-l border-zinc-200 pl-2 dark:border-zinc-800">
-            {n.children.map((c) => renderNode(c, `${path}/${c.mod.name}`, depth + 1))}
+            {n.children.map((c) => renderNode(c, `${path}/${c.mod.name}`, depth + 1, n.soft?.get(c.mod.name)))}
           </ul>
         )}
       </li>
@@ -156,7 +162,9 @@ export function ModpackDisplay({ pack, title, game }: { pack: Modpack; title?: s
   );
 }
 
-function ModRow({ node, depth, open, onToggle }: { node: TreeNode; depth: number; open?: boolean; onToggle?: () => void }) {
+type SoftLink = "optional" | "recommended";
+
+function ModRow({ node, depth, relation, open, onToggle }: { node: TreeNode; depth: number; relation?: SoftLink; open?: boolean; onToggle?: () => void }) {
   const { t } = useTranslation();
   const { info } = node;
   // Lien saisi par l'auteur : ignoré s'il n'est pas en http(s).
@@ -181,9 +189,9 @@ function ModRow({ node, depth, open, onToggle }: { node: TreeNode; depth: number
         <ChevronRight className={clsx("size-4 transition-transform", open && "rotate-90")} />
       </button>
       {info?.thumbnail ? (
-        <img src={info.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" className={clsx("shrink-0 rounded-sm object-cover", depth === 0 ? "size-10" : "size-8")} />
+        <img src={info.thumbnail} alt="" loading="lazy" referrerPolicy="no-referrer" className={clsx("shrink-0 rounded-sm object-cover", relation && "opacity-60", depth === 0 ? "size-10" : "size-8")} />
       ) : (
-        <span className={clsx("flex shrink-0 items-center justify-center rounded-sm bg-zinc-200 text-zinc-400 dark:bg-zinc-800", depth === 0 ? "size-10" : "size-8")}>
+        <span className={clsx("flex shrink-0 items-center justify-center rounded-sm bg-zinc-200 text-zinc-400 dark:bg-zinc-800", relation && "opacity-60", depth === 0 ? "size-10" : "size-8")}>
           <Package className="size-4" />
         </span>
       )}
@@ -199,6 +207,11 @@ function ModRow({ node, depth, open, onToggle }: { node: TreeNode; depth: number
           {newer && <span className="text-[11px] text-emerald-600 dark:text-emerald-400">{t("modpack.newer", { v: newer })}</span>}
           {builtin && <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400">{t("modpack.official")}</Badge>}
           {pack && <Badge className="bg-sky-500/15 text-sky-700 dark:text-sky-400">{t("modpack.modpack")}</Badge>}
+          {relation && (
+            <Badge className={clsx("border border-dashed", relation === "recommended"
+              ? "border-violet-500/50 text-violet-700 dark:text-violet-400"
+              : "border-zinc-400/60 text-zinc-500")}>{t(`modpack.${relation}`)}</Badge>
+          )}
           {node.missing && <Badge className="bg-orange-500/15 text-orange-700 dark:text-orange-400">{t("modpack.missing")}</Badge>}
           {!builtin && !node.missing && info && !info.found && !mod.url && <Badge className="bg-zinc-500/15 text-zinc-500">{t("modpack.notFound")}</Badge>}
           {node.children.length > 0 && <span className="text-xs text-zinc-400">{t("modpack.contains", { count: node.total })}</span>}

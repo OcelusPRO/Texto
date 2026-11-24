@@ -53,7 +53,7 @@ const en: Messages = {
     search: "Filter mods…", expandAll: "Expand all", collapseAll: "Collapse all", flat: "List", tree: "Tree",
     modList: "mod-list.json", modListHint: "Put it in the game's mods folder (the mods themselves still need to be downloaded).",
     copyList: "Copy list", listCopied: "List copied", page: "Mod page", download: "Download version {{v}}",
-    downloadLatest: "Download latest version", official: "Official", modpack: "Modpack", missing: "Dependency missing from the pack",
+    downloadLatest: "Download latest version", official: "Official", optional: "Optional", recommended: "Recommended", modpack: "Modpack", missing: "Dependency missing from the pack",
     missingTitle: "Missing required dependencies", notFound: "Not found on the mod portal", newer: "Newer: {{v}}",
     loading: "Loading mod portal info…", by: "by {{owner}}", contains_one: "{{count}} related mod", contains_other: "{{count}} related mods",
     image: "Cover image (URL)", gameVersion: "{{game}} version", readme: "Presentation (Markdown)",

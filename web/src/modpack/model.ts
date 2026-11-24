@@ -89,6 +89,8 @@ export interface TreeNode {
   mod: ModpackMod;
   info?: ModInfo;
   children: TreeNode[];
+  /** Enfants rattachés sans être requis (clé : nom) — le lien dépend du parent, un nœud étant partagé. */
+  soft?: Map<string, "optional" | "recommended">;
   /** Nombre de mods contenus, récursivement. */
   total: number;
   /** Dépendance requise absente de la liste. */
@@ -97,7 +99,9 @@ export interface TreeNode {
 
 /**
  * Arborescence d'affichage :
- *  - tout mod qui a des dépendances requises les contient (récursivement) ; une dépendance partagée
+ *  - tout mod qui a des dépendances requises les contient (récursivement) ; un modpack contient en plus ses
+ *    dépendances optionnelles / recommandées présentes dans la liste ; un mod ordinaire, celles qui ne seraient
+ *    rangées nulle part ailleurs ; une dépendance partagée
  *    (flib…) apparaît sous chacun des mods qui l'exigent ;
  *  - une dépendance requise absente de la liste apparaît, marquée « absente », sous le mod qui l'exige ;
  *  - à la racine : les mods dont aucun autre mod de la liste n'a besoin.
@@ -105,10 +109,29 @@ export interface TreeNode {
  */
 export function buildTree(mods: ModpackMod[], infos: Map<string, ModInfo>): { roots: TreeNode[]; missing: string[] } {
   const byName = new Map(mods.map((m) => [m.name, m]));
-  const required = (name: string) => [...new Set((infos.get(name)?.dependencies ?? [])
+  const deps = (name: string) => (infos.get(name)?.dependencies ?? [])
     .map(parseDependency)
-    .filter((d): d is Dependency => !!d && (d.kind === "required" || d.kind === "unordered") && !BUILTIN.has(d.name) && d.name !== name)
-    .map((d) => d.name))];
+    .filter((d): d is Dependency => !!d && d.kind !== "incompatible" && !BUILTIN.has(d.name) && d.name !== name);
+  const isRequired = (d: Dependency) => d.kind === "required" || d.kind === "unordered";
+  // Un mod range ses dépendances requises ; un modpack (catégorie « mod-packs ») range aussi ses dépendances
+  // optionnelles / recommandées présentes dans la liste. Un mod ordinaire ne range un optionnel que s'il ne serait
+  // sinon rangé nulle part (modpack non catégorisé) : sans ça les mods de compatibilité, qui déclarent beaucoup
+  // d'optionnels, « contiendraient » des planètes entières.
+  const anchored = new Set<string>();
+  for (const m of mods) {
+    const pack = isModpack(infos.get(m.name));
+    for (const d of deps(m.name)) if (pack || isRequired(d)) anchored.add(d.name);
+  }
+  const subMods = (name: string) => {
+    const pack = isModpack(infos.get(name));
+    const out = new Map<string, "required" | "optional" | "recommended">();
+    for (const d of deps(name)) {
+      if (isRequired(d)) out.set(d.name, "required");
+      else if (byName.has(d.name) && !out.has(d.name) && (pack || !anchored.has(d.name)))
+        out.set(d.name, d.kind === "recommended" ? "recommended" : "optional");
+    }
+    return out;
+  };
 
   const missing = new Set<string>();
   const placed = new Set<string>();
@@ -120,27 +143,29 @@ export function buildTree(mods: ModpackMod[], infos: Map<string, ModInfo>): { ro
     if (done) return done;
     visiting.add(mod.name);
     const children: TreeNode[] = [];
+    const soft = new Map<string, "optional" | "recommended">();
     // Les dépendances viennent du portail pour la version listée ; si le portail ne l'a pas (repli sur la dernière),
     // elles peuvent différer : on range les mods présents mais on ne signale pas d'absent.
     const info = infos.get(mod.name);
     const exact = !mod.version || info?.version === mod.version;
-    for (const d of required(mod.name)) {
+    for (const [d, link] of subMods(mod.name)) {
       if (visiting.has(d)) continue; // boucle
       const m = byName.get(d);
       if (!m) {
-        if (!exact) continue;
+        if (!exact || link !== "required") continue;
         missing.add(d);
         children.push({ mod: { name: d, version: "" }, children: [], total: 0, missing: true });
         continue;
       }
       placed.add(d);
+      if (link !== "required") soft.set(d, link);
       children.push(node(m));
     }
     visiting.delete(mod.name);
     // Nombre de mods distincts contenus (une bibliothèque présente à plusieurs niveaux ne compte qu'une fois).
     const names = new Set<string>();
     const collect = (n: TreeNode) => n.children.forEach((c) => { if (!names.has(c.mod.name)) { names.add(c.mod.name); collect(c); } });
-    const n: TreeNode = { mod, info: infos.get(mod.name), children, total: 0 };
+    const n: TreeNode = { mod, info: infos.get(mod.name), children, total: 0, ...(soft.size ? { soft } : {}) };
     collect(n);
     n.total = names.size;
     built.set(mod.name, n);
@@ -154,6 +179,9 @@ export function buildTree(mods: ModpackMod[], infos: Map<string, ModInfo>): { ro
   const visit = (n: TreeNode) => { if (seen.has(n.mod.name)) return; seen.add(n.mod.name); n.children.forEach(visit); };
   roots.forEach(visit);
   for (const m of mods) if (!seen.has(m.name)) { const n = built.get(m.name)!; roots.push(n); visit(n); }
+  // Les modpacks d'abord (le plus gros en tête), puis les autres mods dans l'ordre de la liste.
+  const rank = (n: TreeNode) => (isModpack(n.info) ? -1 - n.total : 0);
+  roots.sort((a, b) => rank(a) - rank(b));
   return { roots, missing: [...missing] };
 }
 

@@ -51,7 +51,7 @@ const fr = {
     search: "Filtrer les mods…", expandAll: "Tout déplier", collapseAll: "Tout replier", flat: "Liste", tree: "Arborescence",
     modList: "mod-list.json", modListHint: "À placer dans le dossier mods du jeu (les mods eux-mêmes restent à télécharger).",
     copyList: "Copier la liste", listCopied: "Liste copiée", page: "Page du mod", download: "Télécharger la version {{v}}",
-    downloadLatest: "Télécharger la dernière version", official: "Officiel", modpack: "Modpack", missing: "Dépendance absente du pack",
+    downloadLatest: "Télécharger la dernière version", official: "Officiel", optional: "Optionnel", recommended: "Recommandé", modpack: "Modpack", missing: "Dépendance absente du pack",
     missingTitle: "Dépendances requises absentes", notFound: "Introuvable sur le portail", newer: "Plus récente : {{v}}",
     loading: "Chargement des infos du portail…", by: "par {{owner}}", contains_one: "{{count}} mod lié", contains_other: "{{count}} mods liés",
     image: "Image de présentation (URL)", gameVersion: "Version de {{game}}", readme: "Présentation (Markdown)",
