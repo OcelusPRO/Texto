@@ -27,6 +27,9 @@ export interface ModInfo {
 
 /** Mods livrés avec le jeu (pas sur le portail). */
 export const BUILTIN = new Set(["base", "core", "space-age", "quality", "elevated-rails"]);
+/** Rang d'affichage : les mods officiels en tête (dans cet ordre), puis le reste. */
+const BUILTIN_ORDER = ["base", "core", "space-age", "quality", "elevated-rails"];
+export const builtinRank = (name: string) => { const i = BUILTIN_ORDER.indexOf(name); return i < 0 ? BUILTIN_ORDER.length : i; };
 export const BUILTIN_TITLES: Record<string, string> = {
   base: "Factorio", core: "Core", "space-age": "Space Age", quality: "Quality", "elevated-rails": "Elevated Rails",
 };
@@ -179,9 +182,9 @@ export function buildTree(mods: ModpackMod[], infos: Map<string, ModInfo>): { ro
   const visit = (n: TreeNode) => { if (seen.has(n.mod.name)) return; seen.add(n.mod.name); n.children.forEach(visit); };
   roots.forEach(visit);
   for (const m of mods) if (!seen.has(m.name)) { const n = built.get(m.name)!; roots.push(n); visit(n); }
-  // Les modpacks d'abord (le plus gros en tête), puis les autres mods dans l'ordre de la liste.
+  // Les mods officiels d'abord, puis les modpacks (le plus gros en tête), puis les autres dans l'ordre de la liste.
   const rank = (n: TreeNode) => (isModpack(n.info) ? -1 - n.total : 0);
-  roots.sort((a, b) => rank(a) - rank(b));
+  roots.sort((a, b) => builtinRank(a.mod.name) - builtinRank(b.mod.name) || rank(a) - rank(b));
   return { roots, missing: [...missing] };
 }
 

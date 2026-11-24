@@ -9,7 +9,7 @@ import { MarkdownView } from "../components/Viewers";
 import { cmpVersion } from "./saveMods";
 import { gameLabel, type ModpackGame } from "./games";
 import {
-  BUILTIN, BUILTIN_TITLES, buildTree, isModpack, modListJson, parseModpack, portalUrl, safeUrl,
+  BUILTIN, BUILTIN_TITLES, buildTree, builtinRank, isModpack, modListJson, parseModpack, portalUrl, safeUrl,
   type ModInfo, type Modpack, type ModpackMod, type TreeNode,
 } from "./model";
 
@@ -67,7 +67,7 @@ export function ModpackDisplay({ pack, title, game }: { pack: Modpack; title?: s
 
   const f = filter.trim().toLowerCase();
   const flat = useMemo(() => {
-    const list = pack.mods.filter((m) => {
+    const list = [...pack.mods].sort((a, b) => builtinRank(a.name) - builtinRank(b.name)).filter((m) => {
       if (!f) return true;
       const i = infos.get(m.name);
       return m.name.toLowerCase().includes(f) || (i?.title ?? "").toLowerCase().includes(f) || (i?.owner ?? "").toLowerCase().includes(f);
