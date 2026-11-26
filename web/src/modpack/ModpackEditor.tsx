@@ -1,21 +1,30 @@
 import clsx from "clsx";
-import { FolderOpen, FileUp, Plus, Trash2, Upload, X } from "lucide-react";
+import { FolderOpen, FileUp, History, Plus, RefreshCw, RotateCcw, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Input, Label, Spinner, Textarea, useToast } from "../components/ui";
+import { ModpackChanges } from "./ModpackDiff";
 import { ModpackDisplay } from "./ModpackView";
 import { filesFromDataTransfer, importableGames, parseSaves, relevantAny, type GameSave, type ImportResult } from "./importers";
 import { gameLabel, type ModpackGame } from "./games";
-import { BUILTIN, parseModpack, safeUrl, serializeModpack, type Modpack, type ModpackMod } from "./model";
+import { BUILTIN, parseModpack, safeUrl, serializeModpack, syncMods, type Modpack, type ModpackMod } from "./model";
 
 /** Éditeur d'un post modpack : le contenu reste la chaîne JSON du post. */
 /** Sauvegardes déjà lues ailleurs (glisser-déposer / collage sur la page) ; [id] change à chaque nouvel envoi. */
 export interface IncomingSaves extends ImportResult { id: number }
 
-export function ModpackEditor({ content, onChange, incoming, game, onGameChange }: {
+/** Version publiée d'un modpack qu'on met à jour. */
+export interface ModpackBase { content: string; revision: number }
+
+/** « sync » : la liste devient celle de la sauvegarde (liens et notes gardés) ; « merge » : ajoute sans rien retirer. */
+type ImportMode = "sync" | "merge";
+
+export function ModpackEditor({ content, onChange, incoming, game, onGameChange, base }: {
   content: string; onChange: (v: string) => void; incoming?: IncomingSaves | null;
   /** Jeu du modpack ; une sauvegarde d'un autre jeu le change. */
   game: ModpackGame; onGameChange: (g: ModpackGame) => void;
+  /** Mise à jour d'un modpack existant : les changements sont montrés par rapport à cette version. */
+  base?: ModpackBase;
 }) {
   const { t } = useTranslation();
   const pack = useMemo(() => parseModpack(content), [content]);
@@ -24,6 +33,8 @@ export function ModpackEditor({ content, onChange, incoming, game, onGameChange 
   useEffect(() => { if (incoming) setTab("edit"); }, [incoming]);
   const set = (p: Partial<Modpack>) => onChange(serializeModpack({ ...pack, ...p }));
   const setMods = (mods: ModpackMod[]) => set({ mods });
+  const basePack = useMemo(() => (base ? parseModpack(base.content) : null), [base]);
+  const dirty = !!base && content.trimEnd() !== base.content.trimEnd();
 
   return (
     <div className="space-y-4">
@@ -41,12 +52,29 @@ export function ModpackEditor({ content, onChange, incoming, game, onGameChange 
           <SaveImport
             incoming={incoming}
             current={pack.mods.length}
+            update={!!base}
             onImport={(save, mode) => {
-              const mods = mode === "replace" ? save.mods.map((m) => ({ ...m })) : mergeMods(pack.mods, save.mods);
+              const mods = mode === "sync" ? syncMods(pack.mods, save.mods) : mergeMods(pack.mods, save.mods);
               if (save.game !== game) onGameChange(save.game);
               set({ mods, factorioVersion: pack.factorioVersion && mode === "merge" ? pack.factorioVersion : save.gameVersion || pack.factorioVersion });
             }}
           />
+
+          {base && basePack && (
+            <section className="space-y-2 border border-zinc-300 p-3 dark:border-zinc-700">
+              <div className="flex flex-wrap items-center gap-2">
+                <History className="size-4 text-zinc-400" />
+                <span className="text-sm font-medium">{t("modpack.changesSince", { n: base.revision })}</span>
+                {dirty && <span className="text-xs text-zinc-500">{t("modpack.nextVersion", { n: base.revision + 1 })}</span>}
+                {dirty && (
+                  <Button size="sm" variant="ghost" className="ml-auto" onClick={() => onChange(base.content)}>
+                    <RotateCcw className="size-4" />{t("modpack.discard")}
+                  </Button>
+                )}
+              </div>
+              <ModpackChanges before={basePack} after={pack} game={game} />
+            </section>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
             <label className="block">
@@ -82,7 +110,11 @@ function mergeMods(current: ModpackMod[], added: { name: string; version: string
 
 // ---------------------------------------------------------------- import depuis une sauvegarde (local)
 
-function SaveImport({ current, onImport, incoming }: { current: number; onImport: (s: GameSave, mode: "replace" | "merge") => void; incoming?: IncomingSaves | null }) {
+function SaveImport({ current, onImport, incoming, update }: {
+  current: number; onImport: (s: GameSave, mode: ImportMode) => void; incoming?: IncomingSaves | null;
+  /** Mise à jour d'un modpack publié : la sauvegarde remplace la liste sans confirmation (les changements sont affichés et annulables). */
+  update: boolean;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
   const filesRef = useRef<HTMLInputElement>(null);
@@ -94,7 +126,7 @@ function SaveImport({ current, onImport, incoming }: { current: number; onImport
   const show = (r: ImportResult) => {
     r.saves.sort((a, b) => (b.mods.length - a.mods.length) || a.name.localeCompare(b.name));
     setResult(r);
-    if (r.saves.length === 1) apply(r.saves[0], "replace");
+    if (r.saves.length === 1) apply(r.saves[0], "sync");
   };
 
   const run = async (files: File[]) => {
@@ -110,10 +142,10 @@ function SaveImport({ current, onImport, incoming }: { current: number; onImport
     show({ saves: [...incoming.saves], failed: incoming.failed });
   }, [incoming]);
 
-  const apply = (s: GameSave, mode: "replace" | "merge") => {
-    if (mode === "replace" && current > 0 && !confirm(t("modpack.replaceConfirm", { count: current }))) return;
+  const apply = (s: GameSave, mode: ImportMode) => {
+    if (mode === "sync" && !update && current > 0 && !confirm(t("modpack.replaceConfirm", { count: current }))) return;
     onImport(s, mode);
-    toast(t("modpack.imported", { count: s.mods.filter((m) => !BUILTIN.has(m.name)).length }));
+    toast(update && mode === "sync" ? t("modpack.updatedFromSave", { name: s.name }) : t("modpack.imported", { count: s.mods.filter((m) => !BUILTIN.has(m.name)).length }));
   };
 
   // Glisser-déposer : fichiers et dossiers.
@@ -136,14 +168,14 @@ function SaveImport({ current, onImport, incoming }: { current: number; onImport
       className={clsx("space-y-3 border border-dashed p-3 transition-colors", drag ? "border-zinc-500 bg-zinc-100 dark:bg-zinc-900" : "border-zinc-300 dark:border-zinc-700")}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Upload className="size-4 text-zinc-400" />
-        <span className="text-sm font-medium">{t("modpack.importTitle")}</span>
+        {update ? <RefreshCw className="size-4 text-zinc-400" /> : <Upload className="size-4 text-zinc-400" />}
+        <span className="text-sm font-medium">{t(update ? "modpack.updateTitle" : "modpack.importTitle")}</span>
         <Button size="sm" onClick={() => filesRef.current?.click()} disabled={busy}><FileUp className="size-4" />{t("modpack.pickFiles")}</Button>
         <Button size="sm" onClick={() => dirRef.current?.click()} disabled={busy}><FolderOpen className="size-4" />{t("modpack.pickFolder")}</Button>
         <span className="text-xs text-zinc-500">{t("modpack.drop")}</span>
         {busy && <span className="inline-flex items-center gap-1 text-xs text-zinc-500"><Spinner className="size-3.5" />{t("modpack.reading")}</span>}
       </div>
-      <p className="text-xs text-zinc-500">{t("modpack.importHint", { games: importableGames() })}</p>
+      <p className="text-xs text-zinc-500">{update && <>{t("modpack.updateHint")} </>}{t("modpack.importHint", { games: importableGames() })}</p>
       <input ref={filesRef} type="file" multiple accept=".zip,.json,application/zip,application/json" className="hidden"
         onChange={(e) => { run(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
       <input ref={dirRef} type="file" className="hidden" {...{ webkitdirectory: "", directory: "" }}
@@ -164,7 +196,7 @@ function SaveImport({ current, onImport, incoming }: { current: number; onImport
                     <span className="min-w-0 flex-1 truncate">{s.name}</span>
                     <span className="text-xs text-zinc-500">{`${gameLabel(s.game)}${s.gameVersion ? " " + s.gameVersion : ""} · `}{n ? t("modpack.mods", { count: n }) : t("modpack.builtinOnly")}</span>
                     <Button size="sm" variant="ghost" onClick={() => apply(s, "merge")}>{t("modpack.merge")}</Button>
-                    <Button size="sm" onClick={() => apply(s, "replace")}>{t("modpack.use")}</Button>
+                    <Button size="sm" onClick={() => apply(s, "sync")}>{t(update ? "modpack.updateWith" : "modpack.use")}</Button>
                   </li>
                 );
               })}

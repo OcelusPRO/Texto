@@ -9,6 +9,9 @@ import { useMe } from "../lib/session";
 import { PostEditor } from "../components/PostEditor";
 import { Button, PageSpinner, Select, useToast } from "../components/ui";
 import { DiffView } from "../components/Viewers";
+import { ModpackChanges } from "../modpack/ModpackDiff";
+import { gameOf } from "../modpack/games";
+import { parseModpack } from "../modpack/model";
 import { NotFound } from "./NotFound";
 
 export function NewPostPage() {
@@ -42,6 +45,7 @@ export function HistoryPage() {
   const revs = useQuery({ queryKey: ["revisions", key], queryFn: () => api.revisions(key), retry: false });
   const [a, setA] = useState<number | null>(null);
   const [b, setB] = useState<number | null>(null);
+  const [raw, setRaw] = useState(false);
 
   useEffect(() => {
     if (revs.data?.length) {
@@ -56,6 +60,7 @@ export function HistoryPage() {
   if (revs.isLoading) return <PageSpinner />;
   if (revs.error || !revs.data) return <NotFound />;
   const latest = revs.data[0]?.number;
+  const modpack = ra.data?.kind === "modpack" && rb.data?.kind === "modpack";
 
   return (
     <div className="space-y-5">
@@ -91,11 +96,16 @@ export function HistoryPage() {
             <Select value={b ?? ""} onChange={(e) => setB(Number(e.target.value))} className="w-auto">
               {revs.data.map((r) => <option key={r.number} value={r.number}>v{r.number}</option>)}
             </Select>
+            {modpack && (
+              <Button size="sm" variant={raw ? "secondary" : "ghost"} className="ml-auto" onClick={() => setRaw(!raw)}>{t("history.rawJson")}</Button>
+            )}
           </div>
           {ra.data && rb.data ? (
             <>
               {ra.data.title !== rb.data.title && <p className="text-sm">{t("history.titleChanged")} <del className="text-red-600">{ra.data.title}</del> → <ins className="text-emerald-600">{rb.data.title}</ins></p>}
-              <DiffView before={ra.data.content} after={rb.data.content} />
+              {modpack && !raw
+                ? <ModpackChanges before={parseModpack(ra.data.content)} after={parseModpack(rb.data.content)} game={gameOf(rb.data.language)} />
+                : <DiffView before={ra.data.content} after={rb.data.content} />}
             </>
           ) : <PageSpinner />}
         </div>

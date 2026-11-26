@@ -70,6 +70,71 @@ export function modListJson(m: Modpack): string {
   return JSON.stringify({ mods }, null, 2);
 }
 
+// ---------------------------------------------------------------- mise à jour / versions
+
+/**
+ * Liste des mods d'une nouvelle sauvegarde, en gardant ce qu'on avait ajouté à la main (lien, note) sur les mods
+ * toujours présents. Les mods absents de la sauvegarde sont retirés.
+ */
+export function syncMods(current: ModpackMod[], fromSave: { name: string; version: string }[]): ModpackMod[] {
+  const prev = new Map(current.map((m) => [m.name, m]));
+  return fromSave.map((s) => {
+    const p = prev.get(s.name);
+    const out: ModpackMod = { name: s.name, version: s.version };
+    if (p?.url) out.url = p.url;
+    if (p?.note) out.note = p.note;
+    return out;
+  });
+}
+
+export interface ModpackDiff {
+  added: ModpackMod[];
+  removed: ModpackMod[];
+  /** Version changée (« » = n'importe laquelle). */
+  updated: { name: string; from: string; to: string }[];
+  /** Lien ou note modifiés. */
+  annotated: { name: string; url?: [string, string]; note?: [string, string] }[];
+  gameVersion?: [string, string];
+  image?: [string, string];
+  readme?: [string, string];
+  /** Mêmes mods, dans un autre ordre. */
+  reordered?: boolean;
+  /** Rien n'a changé dans le contenu. */
+  empty: boolean;
+}
+
+export function diffModpacks(before: Modpack, after: Modpack): ModpackDiff {
+  const old = new Map(before.mods.map((m) => [m.name, m]));
+  const now = new Map(after.mods.map((m) => [m.name, m]));
+  const added = after.mods.filter((m) => !old.has(m.name));
+  const removed = before.mods.filter((m) => !now.has(m.name));
+  const updated: ModpackDiff["updated"] = [];
+  const annotated: ModpackDiff["annotated"] = [];
+  for (const m of after.mods) {
+    const o = old.get(m.name);
+    if (!o) continue;
+    if (o.version !== m.version) updated.push({ name: m.name, from: o.version, to: m.version });
+    const a: ModpackDiff["annotated"][number] = { name: m.name };
+    if ((o.url ?? "") !== (m.url ?? "")) a.url = [o.url ?? "", m.url ?? ""];
+    if ((o.note ?? "") !== (m.note ?? "")) a.note = [o.note ?? "", m.note ?? ""];
+    if (a.url || a.note) annotated.push(a);
+  }
+  const pair = (a: string, b: string): [string, string] | undefined => (a !== b ? [a, b] : undefined);
+  const d: ModpackDiff = {
+    added, removed, updated, annotated,
+    gameVersion: pair(before.factorioVersion, after.factorioVersion),
+    image: pair(before.image, after.image),
+    readme: pair(before.readme, after.readme),
+    empty: false,
+  };
+  // L'ordre des mods compte aussi pour le contenu enregistré (une nouvelle version est créée) : on le signale.
+  const keptBefore = before.mods.filter((m) => now.has(m.name)).map((m) => m.name);
+  const keptAfter = after.mods.filter((m) => old.has(m.name)).map((m) => m.name);
+  d.reordered = keptBefore.join("\n") !== keptAfter.join("\n");
+  d.empty = !added.length && !removed.length && !updated.length && !annotated.length && !d.gameVersion && !d.image && !d.readme && !d.reordered;
+  return d;
+}
+
 // ---------------------------------------------------------------- dépendances
 
 export type DepKind = "required" | "optional" | "hidden" | "incompatible" | "unordered" | "recommended";

@@ -64,6 +64,15 @@ const fr = {
     addMod: "Ajouter un mod (nom interne)", add: "Ajouter", name: "Nom", version: "Version", url: "Lien (hors portail)", note: "Note",
     game: "Jeu", detected: "Sauvegarde {{game}} détectée : modpack {{game}}", dropToCreate: "Déposez une sauvegarde de jeu ({{games}}), .zip ou dossier, pour créer un modpack",
     remove: "Retirer", anyVersion: "dernière", clear: "Tout retirer", preview: "Aperçu", edit: "Liste",
+    updateTitle: "Mettre à jour depuis une sauvegarde",
+    updateHint: "La liste des mods devient celle de la sauvegarde ; les liens et notes des mods toujours présents sont conservés.",
+    updateWith: "Mettre à jour", updatedFromSave: "Liste mise à jour depuis « {{name}} »",
+    changesSince: "Changements depuis la v{{n}}", nextVersion: "· enregistrés en v{{n}}", discard: "Annuler les changements",
+    noChanges: "Aucun changement.", publishVersion: "Publier la v{{n}}",
+    diffAdded_one: "{{count}} mod ajouté", diffAdded_other: "{{count}} mods ajoutés",
+    diffRemoved_one: "{{count}} mod retiré", diffRemoved_other: "{{count}} mods retirés",
+    diffUpdated_one: "{{count}} version changée", diffUpdated_other: "{{count}} versions changées",
+    diffAnnotated: "Liens / notes modifiés", diffReordered: "Ordre des mods modifié",
   },
   dashboard: {
     allPosts: "Tous mes posts", unfiled: "Sans dossier", moved: "Déplacé", folders: "Dossiers", newFolder: "Nouveau dossier",
@@ -78,7 +87,7 @@ const fr = {
   },
   history: {
     back: "Retour au post", title: "Historique des versions", restore: "Restaurer cette version",
-    restored: "Version {{n}} restaurée", titleChanged: "Titre :",
+    restored: "Version {{n}} restaurée", titleChanged: "Titre :", rawJson: "JSON brut",
   },
   notFound: { title: "Introuvable", text: "Ce post n'existe pas, a expiré ou a été supprimé.", home: "Retour à l'accueil" },
   login: {

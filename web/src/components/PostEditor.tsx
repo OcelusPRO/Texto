@@ -10,7 +10,7 @@ import { useConfig } from "../lib/session";
 import { FbeFrame } from "../factorio/FbeFrame";
 import { FactorioView, useFbeAvailable } from "../factorio/FactorioView";
 import { looksLikeBlueprint } from "../factorio/model";
-import { ModpackEditor, type IncomingSaves } from "../modpack/ModpackEditor";
+import { ModpackEditor, type IncomingSaves, type ModpackBase } from "../modpack/ModpackEditor";
 import { DEFAULT_GAME, gameLabel, gameOf, MODPACK_GAMES } from "../modpack/games";
 import { filesFromDataTransfer, importableGames, mainGame, maybeSaves, parseSaves } from "../modpack/importers";
 import { buildTree, TagInput, type FolderNode } from "./Organize";
@@ -47,6 +47,12 @@ export function PostEditor({ existing }: { existing?: Post }) {
   // FBE intégré : on peut dessiner un plan vanilla de zéro ; les exports (Ctrl+C) remplissent le contenu.
   const fbeVanilla = useFbeAvailable(content);
   const fbeEditing = kind === "factorio" && Boolean(cfg?.fbeUrl) && (!content.trim() || fbeVanilla);
+  // Mise à jour d'un modpack publié : l'éditeur montre les changements par rapport à la version actuelle.
+  const modpackBase = useMemo<ModpackBase | undefined>(
+    () => (existing && s?.kind === "modpack" ? { content: existing.content, revision: s.revision } : undefined),
+    [existing, s],
+  );
+  const newVersion = !!modpackBase && kind === "modpack" && content.trimEnd() !== modpackBase.content.trimEnd();
 
   const { data: folders = [] } = useQuery({ queryKey: ["folders"], queryFn: api.folders });
   const { data: allTags = [] } = useQuery({ queryKey: ["tags"], queryFn: api.tags });
@@ -202,7 +208,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
           {(["public", "unlisted", "private"] as const).map((v) => <option key={v} value={v}>{t(`visibility.${v}`)}</option>)}
         </Select>
         <Button size="sm" variant={showOptions ? "secondary" : "ghost"} onClick={() => setShowOptions(!showOptions)} title={t("editor.options")}><SlidersHorizontal className="size-4" /></Button>
-        <Button size="sm" variant="primary" onClick={save} loading={saving} title="Ctrl+S"><Save className="size-4" />{existing ? t("editor.save") : t("editor.publish")}</Button>
+        <Button size="sm" variant="primary" onClick={save} loading={saving} title="Ctrl+S"><Save className="size-4" />{newVersion ? t("modpack.publishVersion", { n: modpackBase!.revision + 1 }) : existing ? t("editor.save") : t("editor.publish")}</Button>
       </div>
 
       {showOptions && (
@@ -250,7 +256,7 @@ export function PostEditor({ existing }: { existing?: Post }) {
       {kind === "markdown" && mdTab === "preview" ? (
         <div className="min-h-[75vh] p-2"><MarkdownView content={content} /></div>
       ) : kind === "modpack" ? (
-        <ModpackEditor content={content} onChange={setContent} incoming={incoming} game={gameOf(language)} onGameChange={setLanguage} />
+        <ModpackEditor content={content} onChange={setContent} incoming={incoming} game={gameOf(language)} onGameChange={setLanguage} base={modpackBase} />
       ) : kind === "factorio" ? (
         <div className="space-y-3">
           <Textarea value={content} onChange={(e) => setContent(e.target.value.trim())} rows={3} placeholder="0eNq…" className="font-mono text-xs break-all" autoFocus={!existing} />

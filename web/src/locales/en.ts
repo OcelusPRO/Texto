@@ -66,6 +66,15 @@ const en: Messages = {
     addMod: "Add a mod (internal name)", add: "Add", name: "Name", version: "Version", url: "Link (off-portal)", note: "Note",
     game: "Game", detected: "{{game}} save detected: {{game}} modpack", dropToCreate: "Drop a game save ({{games}}), .zip or folder, to create a modpack",
     remove: "Remove", anyVersion: "latest", clear: "Remove all", preview: "Preview", edit: "List",
+    updateTitle: "Update from a save",
+    updateHint: "The mod list becomes the save's; links and notes on mods still present are kept.",
+    updateWith: "Update", updatedFromSave: "List updated from “{{name}}”",
+    changesSince: "Changes since v{{n}}", nextVersion: "· saved as v{{n}}", discard: "Discard changes",
+    noChanges: "No changes.", publishVersion: "Publish v{{n}}",
+    diffAdded_one: "{{count}} mod added", diffAdded_other: "{{count}} mods added",
+    diffRemoved_one: "{{count}} mod removed", diffRemoved_other: "{{count}} mods removed",
+    diffUpdated_one: "{{count}} version changed", diffUpdated_other: "{{count}} versions changed",
+    diffAnnotated: "Links / notes changed", diffReordered: "Mod order changed",
   },
   dashboard: {
     allPosts: "All my posts", unfiled: "Unfiled", moved: "Moved", folders: "Folders", newFolder: "New folder",
@@ -80,7 +89,7 @@ const en: Messages = {
   },
   history: {
     back: "Back to post", title: "Version history", restore: "Restore this version",
-    restored: "Version {{n}} restored", titleChanged: "Title:",
+    restored: "Version {{n}} restored", titleChanged: "Title:", rawJson: "Raw JSON",
   },
   notFound: { title: "Not found", text: "This post doesn't exist, expired or was deleted.", home: "Back home" },
   login: {
