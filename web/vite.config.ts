@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// En dev, le backend Ktor tourne sur :8080 ; Vite lui relaie l'API, l'auth et les fichiers servis.
-const backend = "http://localhost:8080";
+// En dev, le backend Ktor tourne sur :8080 (TEXTO_BACKEND pour un autre) ; Vite lui relaie l'API, l'auth et les fichiers servis.
+const backend = process.env.TEXTO_BACKEND ?? "http://localhost:8080";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
